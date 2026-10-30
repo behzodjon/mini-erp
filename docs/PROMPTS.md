@@ -23,7 +23,7 @@ q9agree
 q10 ok, but what does moving weighted average mean?
 q11 yes
 ```
-   → Answers to round 1 (Image #1 = the Bito job post; its stack: Node.js/Fastify, MongoDB, Redis/BullMQ, React, Vue 3, Flutter, Kotlin). The agent explained moving weighted average and asked round 2 (Fastify+Mongo+React monorepo with clean architecture, Mongo transactions on a replica set, location per line, block negative stock, automatic cash entries, cash categories and counterparties, count at execution time, integer so'm, scope cuts, Uzbek UI / English docs, Render + Atlas).
+   → Answers to round 1 (Image #1 = the Bito job post (Bito is the company that set the task); its stack: Node.js/Fastify, MongoDB, Redis/BullMQ, React, Vue 3, Flutter, Kotlin). The agent explained moving weighted average and asked round 2 (Fastify+Mongo+React monorepo with clean architecture, Mongo transactions on a replica set, location per line, block negative stock, automatic cash entries, cash categories and counterparties, count at execution time, integer so'm, scope cuts, Uzbek UI / English docs, Render + Atlas).
 
 3. ```
 q1 agree
@@ -128,47 +128,47 @@ no i need behzodjon
 20. ```
 [Image #5]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 21. ```
 [Image #6]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 22. ```
 [Image #7]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 23. ```
 [Image #8]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 24. ```
 [Image #9]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 25. ```
 [Image #10]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 26. ```
 [Image #11]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 27. ```
 [Image #12]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 28. ```
 [Image #13]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the next Atlas step (project, cluster, access settings); the agent said what to click.
 
 29. ```
 [Image #14] what should i do
@@ -188,22 +188,22 @@ no i need behzodjon
 32. ```
 [Image #16]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the Render step (Blueprint form, secrets, deploy); afterwards the agent checked the live service and its health.
 
 33. ```
 [Image #17]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the Render step (Blueprint form, secrets, deploy); afterwards the agent checked the live service and its health.
 
 34. ```
 [Image #18]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the Render step (Blueprint form, secrets, deploy); afterwards the agent checked the live service and its health.
 
 35. ```
 [Image #19]
 ```
-   → A short follow-up in the same flow.
+   → Deploy walkthrough: screenshot of the Render step (Blueprint form, secrets, deploy); afterwards the agent checked the live service and its health.
 
 36. ```
 /mattpocock-skills:implement ticket 03

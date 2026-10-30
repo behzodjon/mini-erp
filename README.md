@@ -2,7 +2,7 @@
 
 Stock, sales, purchases and cash for a small beverage shop. TypeScript monorepo: Fastify + MongoDB API, React web app, shared Zod schemas.
 
-**Live demo:** https://beverage-shop-erp.onrender.com (seeded with demo data; the first request after idle takes ~50 s on the free instance). The demo login is sent with the submission, not stored in the repo.
+**Live demo:** https://beverage-shop-erp.onrender.com (seeded with demo data; the first request after idle takes ~50 s on the free instance).
 
 ## Documentation
 
@@ -63,8 +63,7 @@ pnpm start   # production: serves API + web app from Fastify (set NODE_ENV=produ
 2. In Render: New → Blueprint → pick this repo. Set the secret env vars it asks for: `MONGODB_URI` (the Atlas `mongodb+srv://` string), `OWNER_USERNAME`, `OWNER_PASSWORD_HASH` (from `pnpm hash-password <password>`) and `SESSION_SECRET` (32+ random chars).
 3. Open the URL: the login page shows, and `/api/health` reports `{"api":"ok","database":"ok"}`.
 
-Live URL: https://beverage-shop-erp.onrender.com (free instance: the first request after idle takes ~50 s)
 
 ## Demo data
 
-`pnpm seed` builds a running shop through the use cases (products, a warehouse tree, purchases, sales, a stock count with a shortage, loans in both directions, expenses, and one draft of each document). It reads the same `.env` as the API, so pointing `MONGODB_URI` at Atlas seeds the live database. The login is whatever `OWNER_USERNAME` and the password behind `OWNER_PASSWORD_HASH` are; share those with the reviewer.
+`pnpm seed` builds a running shop through the use cases (products, a warehouse tree, purchases, sales, a stock count with a shortage, loans in both directions, expenses, and one draft of each document). It reads the same `.env` as the API, so pointing `MONGODB_URI` at Atlas seeds the live database. The login is `OWNER_USERNAME` plus the password behind `OWNER_PASSWORD_HASH`; the demo login is sent with the submission, not stored in the repo.

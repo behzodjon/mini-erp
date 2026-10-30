@@ -46,14 +46,14 @@ Dasturni birinchi marta ishga tushirganda quyidagi tartibda ishlang.
 1. **Mahsulotlar** bo'limini oching va **Yangi mahsulot**ni bosing.
 2. To'ldiring:
    - **Nomi** — masalan, "Cola 0.5L".
-   - **SKU** — ixtiyoriy, o'xshash mahsulotlarni ajratish uchun kod yoki shtrix-kod.
-   - **Blokda (dona)** — bir blokda nechta dona. Masalan, 12.
-   - **Sotuv narxi (so'm)** — bir dona uchun odatiy narx. Savdoda shu narx o'zi chiqadi, xohlasangiz o'zgartirasiz.
+   - **SKU / shtrix-kod** — ixtiyoriy, o'xshash mahsulotlarni ajratish uchun kod yoki shtrix-kod.
+   - **Blokda necha dona** — bir blokda nechta dona. Masalan, 12.
+   - **Sotuv narxi (so'm, 1 dona)** — bir dona uchun odatiy narx. Savdoda shu narx o'zi chiqadi, xohlasangiz o'zgartirasiz.
 3. **Saqlash**ni bosing.
 
 Muhim:
 
-- Mahsulotga birinchi tovar harakati yozilgach, **"Blokda (dona)" ni o'zgartirib bo'lmaydi**. Aks holda eski hisobotlardagi bloklar soni jimgina o'zgarib ketardi. Shuning uchun uni to'g'ri kiriting.
+- Mahsulotga birinchi tovar harakati yozilgach, **"Blokda necha dona" ni o'zgartirib bo'lmaydi**. Aks holda eski hisobotlardagi bloklar soni jimgina o'zgarib ketardi. Shuning uchun uni to'g'ri kiriting.
 - Nomi, SKU va sotuv narxini istalgan vaqtda o'zgartirsa bo'ladi.
 - Sotilmaydigan mahsulotni **Arxivlash** mumkin: u tanlov ro'yxatlaridan yo'qoladi, lekin tarix saqlanadi. **Arxivdagilarni ko'rsatish** belgisi bilan ularni ko'rish, **Qaytarish** bilan qaytarish mumkin.
 - Ro'yxat yuqoridagi qidiruv orqali nom yoki SKU bo'yicha qidiriladi.
@@ -87,7 +87,7 @@ Yetkazib beruvchidan tovar kelganda.
 ### 4.2. Qadamlar
 
 1. **Xaridlar** → **Yangi xarid**.
-2. Yuqorida **odatiy ombor**ni tanlang. U har bir yangi qatorga o'zi qo'yiladi. Odatda joyni bir marta tanlaysiz.
+2. Yuqorida **Ombor (yangi qatorlar uchun)** maydonini tanlang. U har bir yangi qatorga o'zi qo'yiladi. Odatda joyni bir marta tanlaysiz.
 3. **Qator qo'shish** orqali har bir mahsulot uchun qator qo'shing:
    - **Mahsulot**ni tanlang.
    - **Birlik**: **dona** yoki **blok**. Yetkazib beruvchining hisob-fakturasida qanday yozilgan bo'lsa, shunday kiriting.
@@ -109,9 +109,9 @@ Xato topsangiz: qoralamani **Tahrirlash** yoki **O'chirish** mumkin. Bajarilgan 
 ## 5. Sotish
 
 1. **Savdolar** → **Yangi savdo**.
-2. Yuqorida **odatiy ombor**ni tanlang.
+2. Yuqorida **Ombor (yangi qatorlar uchun)** maydonini tanlang.
 3. Qator qo'shing: mahsulot, birlik (dona yoki blok), miqdor. **Narx** mahsulotning sotuv narxidan o'zi to'ladi. Chegirma yoki blok narxi uchun o'zgartiring.
-4. Qatorda tanlangan joydagi **mavjud miqdor** ko'rinadi, shunga qarab joyni tanlang.
+4. Qatorda tanlangan joydagi **Mavjud: N dona** yozuvi ko'rinadi, shunga qarab joyni tanlang.
 5. Bir mijoz bir mahsulotni ikki joydan olishi mumkin (masalan, muzlatgichdan 40 va javondan 10). Buning uchun shu mahsulotdan ikkita qator qo'shing, har biriga o'z joyini bering. Bu bitta hujjat bo'ladi.
 6. **Saqlash** — qoralama (`SAV-0001` ko'rinishida).
 7. Savdo tugagach **Bajarish**ni bosing va tasdiqlang.
@@ -228,9 +228,9 @@ Tannarx **o'rtacha** bo'yicha olinadi: masalan, 100 dona 5 000 so'mdan, keyin 50
 
 **Savdoni bajarib bo'lmayapti, nega?** Tanlangan joyda tovar yetarli emas. Xabarda qaysi qator ekani ko'rsatilgan. Miqdorni kamaytiring, boshqa joyni tanlang yoki avval xaridni bajaring.
 
-**Bajarilgan hujjatda xato bor.** Bajarilgan hujjatni o'zgartirib bo'lmaydi (hisob tarixi buzilmasligi uchun). Xatoni tuzatish uchun sanash (inventarizatsiya) yoki to'g'rilovchi yozuv kiriting.
+**Bajarilgan hujjatda xato bor.** Bajarilgan hujjatni o'zgartirib bo'lmaydi (hisob tarixi buzilmasligi uchun). Tovar qoldig'idagi xatoni inventarizatsiya bilan, pul xatosini esa Kassada yangi yozuv bilan tuzating.
 
-**"Blokda (dona)" ni o'zgartira olmayapman.** Mahsulotda allaqachon harakat bor. Qiymatni oldindan to'g'ri kiriting.
+**"Blokda necha dona" ni o'zgartira olmayapman.** Mahsulotda allaqachon harakat bor. Qiymatni oldindan to'g'ri kiriting.
 
 **Ombor o'chmayapti.** Uning ichida joylar yoki tovar bor. Avval ularni bo'shating.
 

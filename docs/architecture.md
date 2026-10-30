@@ -12,7 +12,7 @@ Money passes through the shop's cash register for very different reasons:
 |---|---|---|
 | Sale | yes (in) | **Revenue** |
 | Purchase of goods | yes (out) | No. The cost reaches profit later, as cost of goods sold, when the goods are sold. |
-| Travel cost (yo'l kira), rent, salary | yes (out) | **Operating expense** |
+| Travel cost (`yo'l kira` in the UI), rent, salary | yes (out) | **Operating expense** |
 | Other income | yes (in) | **Other income** |
 | Loan received | yes (in) | No. It is a debt, not earnings. |
 | Loan repayment paid | yes (out) | No. It settles a debt. |
@@ -96,6 +96,8 @@ Warehouses form a tree of any depth, and **any node may hold stock**, not only t
 
 Average cost is per product, not per node, because a bottle bought into the fridge costs the same as one on the shelf.
 
+Alternatives rejected: a fixed warehouse/shelf two-level model (real layouts are deeper and uneven), and walking the tree recursively at read time (ancestor paths make a subtree one query; the price is rewriting paths if a node were ever moved, which is not a feature).
+
 ## 7. Clean architecture and the composition root
 
 ```
@@ -108,7 +110,7 @@ apps/api/src
   composition-root.ts   the one place that wires everything
 ```
 
-Dependencies point inward only. The domain imports nothing; use cases depend on **ports**, not on MongoDB; the adapters implement the ports. `test/architecture.test.ts` fails the build if domain or application code imports Fastify, MongoDB, bcrypt, or the infrastructure or HTTP layers. The composition root builds the concrete adapters and hands them to the use cases by plain function arguments. **No DI framework**: constructor wiring in one file is easier to read than decorators and containers at this size.
+Dependencies point inward only. The domain imports nothing; use cases depend on **ports**, not on MongoDB; the adapters implement the ports. `test/architecture.test.ts` fails the build if domain or application code imports Fastify, MongoDB, bcrypt, or the infrastructure or HTTP layers. The composition root builds the concrete adapters and hands them to the use cases by plain function arguments. **No DI framework**: constructor wiring in one file is easier to read than decorators and containers at this size. Also rejected: routes that call the database directly. It is shorter, but it puts the money rules in HTTP handlers, where they can only be tested through a database.
 
 Domain errors (insufficient stock, already executed, not found) are mapped to HTTP statuses in one place, `http/error-handler.ts` (409, 409, 404; validation errors are 400). Request and response shapes are Zod schemas in `packages/shared`, used by both the API and the web app, so the contract is defined once.
 
@@ -116,7 +118,7 @@ In production Fastify also serves the built web app, so there is **one service, 
 
 ## 8. Auth
 
-One owner account. The username and a bcrypt password hash come from environment variables; nothing is stored in the database. Login sets a signed, httpOnly session cookie (secure in production). Every route except login and health requires it, and routes opt out explicitly with `config.public`, so a forgotten route is protected by default. The session is a signed cookie with no server-side store, so logout clears the cookie but cannot revoke a stolen one; for a single-owner shop this is accepted and noted under next steps.
+One owner account. The username and a bcrypt password hash come from environment variables; nothing is stored in the database. Login sets a signed, httpOnly session cookie (secure in production). Every route except login and health requires it, and routes opt out explicitly with `config.public`, so a forgotten route is protected by default. Alternatives rejected: a users table with roles (one owner needs none) and tokens kept in browser storage (an httpOnly cookie cannot be read by page scripts). The session is a signed cookie with no server-side store, so logout clears the cookie but cannot revoke a stolen one; for a single-owner shop this is accepted and noted under next steps.
 
 ## 9. Report dates and the shop timezone
 
@@ -132,6 +134,7 @@ The job post lists Redis/BullMQ, but nothing in this scope is asynchronous. Exec
 - **Second seam: pure domain arithmetic.** Table-driven unit tests for unit conversion, the moving average, the stock-count difference, the cash-category rules and P&L composition.
 - **Architecture test** for the layer boundaries (section 7).
 - **Seed test**: the demo seed is built through the use cases and a test checks that every report has data.
+- Rejected: mocking repositories in use case tests (it tests the mocks, and breaks on every refactor) and a browser test suite (it does not fit the time budget).
 - The web app is verified manually against the live demo; there is no UI test automation within the time budget.
 
 Run everything with `pnpm typecheck` and `pnpm test`.
