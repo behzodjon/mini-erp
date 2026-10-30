@@ -1,6 +1,9 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyError, FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { ConflictError, DomainError, InsufficientStockError, InvalidCredentialsError, NotAuthenticatedError, NotFoundError } from "../domain/errors.js";
+
+const isClientError = (error: unknown): error is FastifyError & { statusCode: number } =>
+  error instanceof Error && "statusCode" in error && typeof error.statusCode === "number" && error.statusCode >= 400 && error.statusCode < 500;
 
 /** Maps domain errors to HTTP status codes in one place, so use cases never know about HTTP. */
 export function registerErrorHandler(app: FastifyInstance): void {
@@ -22,6 +25,10 @@ export function registerErrorHandler(app: FastifyInstance): void {
     }
     if (error instanceof DomainError) {
       return reply.status(400).send({ code: error.code, message: error.message });
+    }
+    // Fastify's own client errors (malformed JSON, oversized body, ...) carry their 4xx status.
+    if (isClientError(error)) {
+      return reply.status(error.statusCode).send({ code: error.code ?? "BAD_REQUEST", message: error.message });
     }
     request.log.error(error);
     return reply.status(500).send({ code: "INTERNAL_ERROR", message: "Internal server error" });

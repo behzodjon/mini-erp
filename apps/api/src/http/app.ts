@@ -199,14 +199,20 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
     deps.reports.stockAtNode(request.params.warehouseId),
   );
 
-  app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());
+  app.get("/api/health", { config: { public: true } }, async (_request, reply) => {
+    const health = await deps.checkHealth();
+    return reply.status(health.database === "ok" ? 200 : 503).send(health);
+  });
 
   if (deps.webRoot) await registerWebApp(app, deps.webRoot);
 
   return app;
 }
 
-/** Serves the built web app; non-API paths that match no file get index.html so client-side routes survive a reload. */
+/**
+ * Serves the built web app; non-API paths that match no file get index.html so client-side routes survive a reload.
+ * A path with a file extension is a missing asset, not a client route, so it stays a 404.
+ */
 async function registerWebApp(app: FastifyInstance, webRoot: string): Promise<void> {
   await app.register(async (web) => {
     // Scoped to this plugin: only the static routes opt out of the session guard.
@@ -217,7 +223,8 @@ async function registerWebApp(app: FastifyInstance, webRoot: string): Promise<vo
     // The 404 route is not seen by onRoute, and Fastify's types omit `config` here although the guard reads it at runtime.
     const publicRoute = { config: { public: true } } as unknown as Record<string, never>;
     web.setNotFoundHandler(publicRoute, (request, reply) => {
-      if (request.method !== "GET" || request.url.startsWith("/api/")) {
+      const path = request.url.split("?")[0] ?? "";
+      if (request.method !== "GET" || path.startsWith("/api/") || /\.[a-z0-9]+$/i.test(path)) {
         return reply.status(404).send({ error: "not_found" });
       }
       return reply.sendFile("index.html");

@@ -38,6 +38,17 @@ describe("serving the built web app", () => {
     expect(res.body).toContain("erp-index");
   });
 
+  it("answers 404, not the index page, for a missing file", async () => {
+    const res = await t.app.inject({ method: "GET", url: "/assets/gone.js" });
+    expect(res.statusCode).toBe(404);
+    expect(res.body).not.toContain("erp-index");
+  });
+
+  it("keeps a malformed request a 4xx instead of a 500", async () => {
+    const res = await t.app.inject({ method: "POST", url: "/api/auth/login", headers: { "content-type": "application/json" }, payload: "{not json" });
+    expect(res.statusCode).toBe(400);
+  });
+
   it("keeps unknown API paths as JSON 404s, not the index page", async () => {
     const res = await t.app.inject({ method: "GET", url: "/api/nope" });
     expect(res.statusCode).toBe(404);
