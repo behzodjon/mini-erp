@@ -19,19 +19,14 @@ export const createProductRequestSchema = z.strictObject({
 });
 export type CreateProductRequest = z.infer<typeof createProductRequestSchema>;
 
-export const updateProductRequestSchema = z.strictObject({
-  name: name.optional(),
-  sku: sku.optional(),
-  piecesPerBlock: piecesPerBlock.optional(),
-  defaultSalePrice: defaultSalePrice.optional(),
-});
+/** Every field is optional on edit; omitted fields stay unchanged. */
+export const updateProductRequestSchema = createProductRequestSchema.partial();
 export type UpdateProductRequest = z.infer<typeof updateProductRequestSchema>;
 
 export const listProductsQuerySchema = z.object({
   search: z.string().trim().optional(),
   includeArchived: z.enum(["true", "false"]).optional().transform((v) => v === "true"),
 });
-export type ListProductsQuery = z.input<typeof listProductsQuerySchema>;
 
 export const productSchema = z.object({
   id: z.string(),

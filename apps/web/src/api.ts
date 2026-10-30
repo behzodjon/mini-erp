@@ -1,7 +1,6 @@
 import type {
   CreateProductRequest,
   CurrentUser,
-  ListProductsQuery,
   LoginRequest,
   Product,
   UpdateProductRequest,
@@ -40,10 +39,10 @@ export const api = {
   login: (credentials: LoginRequest) => request<CurrentUser>("POST", "/api/auth/login", credentials),
   logout: () => request<void>("POST", "/api/auth/logout"),
 
-  listProducts(query: ListProductsQuery) {
+  listProducts(query: { search: string; includeArchived: boolean }) {
     const params = new URLSearchParams();
     if (query.search) params.set("search", query.search);
-    if (query.includeArchived) params.set("includeArchived", query.includeArchived);
+    if (query.includeArchived) params.set("includeArchived", "true");
     return request<Product[]>("GET", `/api/products?${params}`);
   },
   createProduct: (body: CreateProductRequest) => request<Product>("POST", "/api/products", body),

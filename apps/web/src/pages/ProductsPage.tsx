@@ -26,7 +26,7 @@ export function ProductsPage() {
 
   const products = useQuery({
     queryKey: [...PRODUCTS_KEY, search, includeArchived],
-    queryFn: () => api.listProducts({ search, includeArchived: includeArchived ? "true" : "false" }),
+    queryFn: () => api.listProducts({ search, includeArchived }),
   });
   const refresh = () => queryClient.invalidateQueries({ queryKey: PRODUCTS_KEY });
 

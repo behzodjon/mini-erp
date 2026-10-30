@@ -1,5 +1,6 @@
 import type { CurrentUser } from "@erp/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ReactElement } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { api } from "./api";
 import { ProductsPage } from "./pages/ProductsPage";
@@ -14,6 +15,11 @@ const NAV = [
   { to: "/kassa", label: "Kassa" },
   { to: "/hisobotlar", label: "Hisobotlar" },
 ];
+
+/** Sections that have a real page; the rest show a placeholder until their ticket lands. */
+const PAGES: Record<string, ReactElement> = {
+  "/mahsulotlar": <ProductsPage />,
+};
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -52,9 +58,8 @@ export function AppShell({ user }: { user: CurrentUser }) {
       <main>
         <Routes>
           <Route path="/" element={<Placeholder title="Xush kelibsiz" />} />
-          <Route path="/mahsulotlar" element={<ProductsPage />} />
-          {NAV.filter((item) => item.to !== "/mahsulotlar").map((item) => (
-            <Route key={item.to} path={item.to} element={<Placeholder title={item.label} />} />
+          {NAV.map((item) => (
+            <Route key={item.to} path={item.to} element={PAGES[item.to] ?? <Placeholder title={item.label} />} />
           ))}
           <Route path="*" element={<Placeholder title="Sahifa topilmadi" />} />
         </Routes>
