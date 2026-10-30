@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { ZodError } from "zod";
-import { DomainError, InvalidCredentialsError, NotAuthenticatedError } from "../domain/errors.js";
+import { DomainError, InvalidCredentialsError, NotAuthenticatedError, NotFoundError } from "../domain/errors.js";
 
 /** Maps domain errors to HTTP status codes in one place, so use cases never know about HTTP. */
 export function registerErrorHandler(app: FastifyInstance): void {
@@ -10,6 +10,9 @@ export function registerErrorHandler(app: FastifyInstance): void {
     }
     if (error instanceof InvalidCredentialsError || error instanceof NotAuthenticatedError) {
       return reply.status(401).send({ code: error.code, message: error.message });
+    }
+    if (error instanceof NotFoundError) {
+      return reply.status(404).send({ code: error.code, message: error.message });
     }
     if (error instanceof DomainError) {
       return reply.status(400).send({ code: error.code, message: error.message });

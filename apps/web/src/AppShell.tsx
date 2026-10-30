@@ -2,6 +2,7 @@ import type { CurrentUser } from "@erp/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { api } from "./api";
+import { ProductsPage } from "./pages/ProductsPage";
 import { SESSION_KEY } from "./session";
 
 const NAV = [
@@ -51,7 +52,8 @@ export function AppShell({ user }: { user: CurrentUser }) {
       <main>
         <Routes>
           <Route path="/" element={<Placeholder title="Xush kelibsiz" />} />
-          {NAV.map((item) => (
+          <Route path="/mahsulotlar" element={<ProductsPage />} />
+          {NAV.filter((item) => item.to !== "/mahsulotlar").map((item) => (
             <Route key={item.to} path={item.to} element={<Placeholder title={item.label} />} />
           ))}
           <Route path="*" element={<Placeholder title="Sahifa topilmadi" />} />

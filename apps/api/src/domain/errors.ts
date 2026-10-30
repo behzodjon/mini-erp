@@ -16,3 +16,10 @@ export class NotAuthenticatedError extends DomainError {
     super("Authentication required");
   }
 }
+
+export class NotFoundError extends DomainError {
+  readonly code = "NOT_FOUND";
+  constructor(what: string) {
+    super(`${what} not found`);
+  }
+}

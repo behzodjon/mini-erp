@@ -1,4 +1,11 @@
-import type { CurrentUser, LoginRequest } from "@erp/shared";
+import type {
+  CreateProductRequest,
+  CurrentUser,
+  ListProductsQuery,
+  LoginRequest,
+  Product,
+  UpdateProductRequest,
+} from "@erp/shared";
 
 export class ApiError extends Error {
   constructor(
@@ -32,4 +39,15 @@ export const api = {
   },
   login: (credentials: LoginRequest) => request<CurrentUser>("POST", "/api/auth/login", credentials),
   logout: () => request<void>("POST", "/api/auth/logout"),
+
+  listProducts(query: ListProductsQuery) {
+    const params = new URLSearchParams();
+    if (query.search) params.set("search", query.search);
+    if (query.includeArchived) params.set("includeArchived", query.includeArchived);
+    return request<Product[]>("GET", `/api/products?${params}`);
+  },
+  createProduct: (body: CreateProductRequest) => request<Product>("POST", "/api/products", body),
+  updateProduct: (id: string, body: UpdateProductRequest) => request<Product>("PATCH", `/api/products/${id}`, body),
+  setProductArchived: (id: string, archived: boolean) =>
+    request<Product>("POST", `/api/products/${id}/${archived ? "archive" : "unarchive"}`),
 };

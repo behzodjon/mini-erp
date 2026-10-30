@@ -1,9 +1,15 @@
 import cookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
-import { loginRequestSchema } from "@erp/shared";
+import {
+  createProductRequestSchema,
+  listProductsQuerySchema,
+  loginRequestSchema,
+  updateProductRequestSchema,
+} from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
 import type { makeLogin } from "../application/login.js";
+import type { ProductUseCases } from "../application/products.js";
 import { NotAuthenticatedError } from "../domain/errors.js";
 import { registerErrorHandler } from "./error-handler.js";
 import { endSession, readSession, startSession } from "./session.js";
@@ -11,6 +17,7 @@ import { endSession, readSession, startSession } from "./session.js";
 export type HttpDeps = {
   login: ReturnType<typeof makeLogin>;
   checkHealth: ReturnType<typeof makeCheckHealth>;
+  products: ProductUseCases;
   sessionSecret: string;
   secureCookies: boolean;
   webRoot?: string;
@@ -46,6 +53,25 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
   });
 
   app.get("/api/auth/me", async (request) => readSession(request));
+
+  app.get("/api/products", async (request) => deps.products.list(listProductsQuerySchema.parse(request.query)));
+
+  app.post("/api/products", async (request, reply) => {
+    const product = await deps.products.create(createProductRequestSchema.parse(request.body));
+    return reply.status(201).send(product);
+  });
+
+  app.patch<{ Params: { id: string } }>("/api/products/:id", async (request) =>
+    deps.products.update(request.params.id, updateProductRequestSchema.parse(request.body)),
+  );
+
+  app.post<{ Params: { id: string } }>("/api/products/:id/archive", async (request) =>
+    deps.products.setArchived(request.params.id, true),
+  );
+
+  app.post<{ Params: { id: string } }>("/api/products/:id/unarchive", async (request) =>
+    deps.products.setArchived(request.params.id, false),
+  );
 
   app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());
 

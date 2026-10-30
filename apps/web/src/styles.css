@@ -19,3 +19,18 @@ label { display: block; margin-bottom: 1rem; font-size: 0.9rem; }
 .shell nav a.active { background: #374151; color: #fff; }
 .shell .user { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.9rem; }
 .shell main { padding: 2rem; }
+.toolbar { display: flex; align-items: end; gap: 1rem; margin-bottom: 1rem; }
+.toolbar label { margin: 0; }
+.toolbar .search { flex: 1; max-width: 22rem; }
+.toolbar .check { display: flex; align-items: center; gap: 0.4rem; }
+.toolbar .check input { display: inline; width: auto; margin: 0; }
+.product-form { display: grid; grid-template-columns: repeat(4, 1fr) auto; align-items: end; gap: 0.75rem; padding: 1rem; margin-bottom: 1rem; background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgb(0 0 0 / 0.12); }
+.product-form label { margin: 0; }
+.product-form .actions { display: flex; gap: 0.5rem; }
+.product-form .full { grid-column: 1 / -1; }
+table.data { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgb(0 0 0 / 0.12); }
+table.data th, table.data td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+table.data .num { text-align: right; }
+table.data tr.archived td { color: #9ca3af; }
+table.data .row-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+button.secondary { background: #e5e7eb; color: #1f2937; }
