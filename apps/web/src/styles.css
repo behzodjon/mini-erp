@@ -94,8 +94,8 @@ input:focus, select:focus { border-color: var(--accent); }
 .toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem 1rem; margin-bottom: 1.25rem; }
 .toolbar label { margin: 0; }
 .toolbar .search { flex: 1; min-width: 12rem; max-width: 24rem; }
-.toolbar .check { display: flex; align-items: center; gap: 0.4rem; min-height: 2.5rem; }
-.toolbar .check input { display: inline; width: auto; min-height: 0; margin: 0; accent-color: var(--accent); }
+label.check { display: flex; align-items: center; gap: 0.4rem; min-height: 2.5rem; }
+label.check input { display: inline; width: auto; min-height: 0; margin: 0; accent-color: var(--accent); }
 .tabs { display: inline-flex; gap: 0.25rem; padding: 0.25rem; border-radius: 10px; background: #e8eaf2; }
 .tabs button { background: transparent; color: var(--muted); border: 0; box-shadow: none; }
 .tabs button:hover:not(:disabled) { background: rgb(255 255 255 / 0.6); }
