@@ -1,4 +1,4 @@
-import { ObjectId, type Collection, type Db } from "mongodb";
+import { ObjectId, type ClientSession, type Collection, type Db } from "mongodb";
 import type { ProductRepository } from "../../application/ports/product-repository.js";
 import type { Product } from "../../domain/product.js";
 
@@ -8,7 +8,7 @@ const toProduct = ({ _id, ...rest }: ProductDoc): Product => ({ id: _id.toHexStr
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-export function makeMongoProductRepository(db: Db): ProductRepository {
+export function makeMongoProductRepository(db: Db, session?: ClientSession): ProductRepository {
   const products: Collection<ProductDoc> = db.collection("products");
 
   /** An id that is not a valid ObjectId cannot match any product. */
@@ -20,19 +20,29 @@ export function makeMongoProductRepository(db: Db): ProductRepository {
     // An empty $set is a Mongo error; an edit with no changes just returns the product.
     const defined = Object.fromEntries(Object.entries(set).filter(([, v]) => v !== undefined));
     const doc = Object.keys(defined).length
-      ? await products.findOneAndUpdate(filter, { $set: defined }, { returnDocument: "after" })
-      : await products.findOne(filter);
+      ? await products.findOneAndUpdate(filter, { $set: defined }, { returnDocument: "after", session })
+      : await products.findOne(filter, { session });
     return doc && toProduct(doc);
   }
 
   return {
     async create(details) {
       const doc: ProductDoc = { _id: new ObjectId(), ...details, averageCost: 0, onHandQuantity: 0, archived: false };
-      await products.insertOne(doc);
+      await products.insertOne(doc, { session });
       return toProduct(doc);
     },
 
+    async findById(id) {
+      const filter = idFilter(id);
+      const doc = filter && (await products.findOne(filter, { session }));
+      return doc ? toProduct(doc) : null;
+    },
+
     update: (id, changes) => updateOne(id, changes),
+
+    async setStock(id, stock) {
+      await products.updateOne({ _id: new ObjectId(id) }, { $set: stock }, { session });
+    },
 
     setArchived: (id, archived) => updateOne(id, { archived }),
 

@@ -44,3 +44,27 @@ export class NotFoundError extends DomainError {
     super(`${what} not found`);
   }
 }
+
+/** The request is valid but conflicts with the current state of the data. */
+export abstract class ConflictError extends DomainError {}
+
+export class AlreadyExecutedError extends ConflictError {
+  readonly code = "ALREADY_EXECUTED";
+  constructor() {
+    super("This document has already been executed");
+  }
+}
+
+export class PiecesPerBlockLockedError extends ConflictError {
+  readonly code = "PIECES_PER_BLOCK_LOCKED";
+  constructor() {
+    super("Pieces per block cannot change once the product has stock movements");
+  }
+}
+
+export class WarehouseHasStockError extends ConflictError {
+  readonly code = "WAREHOUSE_HAS_STOCK";
+  constructor() {
+    super("Warehouse holds stock and cannot be deleted");
+  }
+}

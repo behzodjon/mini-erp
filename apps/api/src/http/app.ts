@@ -9,6 +9,7 @@ import {
   listProductsQuerySchema,
   loginRequestSchema,
   renameWarehouseRequestSchema,
+  savePurchaseRequestSchema,
   updateProductRequestSchema,
 } from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
@@ -16,6 +17,8 @@ import type { makeLogin } from "../application/login.js";
 import type { CashUseCases } from "../application/cash.js";
 import type { CounterpartyUseCases } from "../application/counterparties.js";
 import type { ProductUseCases } from "../application/products.js";
+import type { PurchaseUseCases } from "../application/purchases.js";
+import type { ReportUseCases } from "../application/reports.js";
 import type { WarehouseUseCases } from "../application/warehouses.js";
 import { NotAuthenticatedError } from "../domain/errors.js";
 import { registerErrorHandler } from "./error-handler.js";
@@ -26,6 +29,8 @@ export type HttpDeps = {
   checkHealth: ReturnType<typeof makeCheckHealth>;
   products: ProductUseCases;
   warehouses: WarehouseUseCases;
+  purchases: PurchaseUseCases;
+  reports: ReportUseCases;
   cash: CashUseCases;
   counterparties: CounterpartyUseCases;
   sessionSecret: string;
@@ -112,6 +117,28 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
     const entry = await deps.cash.recordManualEntry(createCashEntryRequestSchema.parse(request.body));
     return reply.status(201).send(entry);
   });
+
+  app.get("/api/purchases", async () => deps.purchases.list());
+
+  app.get<{ Params: { id: string } }>("/api/purchases/:id", async (request) => deps.purchases.get(request.params.id));
+
+  app.post("/api/purchases", async (request, reply) => {
+    const purchase = await deps.purchases.createDraft(savePurchaseRequestSchema.parse(request.body));
+    return reply.status(201).send(purchase);
+  });
+
+  app.put<{ Params: { id: string } }>("/api/purchases/:id", async (request) =>
+    deps.purchases.updateDraft(request.params.id, savePurchaseRequestSchema.parse(request.body)),
+  );
+
+  app.delete<{ Params: { id: string } }>("/api/purchases/:id", async (request, reply) => {
+    await deps.purchases.deleteDraft(request.params.id);
+    return reply.status(204).send();
+  });
+
+  app.post<{ Params: { id: string } }>("/api/purchases/:id/execute", async (request) => deps.purchases.execute(request.params.id));
+
+  app.get("/api/reports/stock", async () => deps.reports.stockByProduct());
 
   app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());
 

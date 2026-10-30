@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoDate } from "./date.js";
 
 export const cashDirections = ["in", "out"] as const;
 export type CashDirection = (typeof cashDirections)[number];
@@ -20,11 +21,6 @@ export type ManualCashCategory = (typeof manualCashCategories)[number];
 /** Categories the system writes itself when a sale or purchase is executed. */
 export const automaticCashCategories = ["sale", "purchase"] as const;
 export type CashCategory = ManualCashCategory | (typeof automaticCashCategories)[number];
-
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((s) => !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().startsWith(s), "Not a real calendar date");
 
 export const createCounterpartyRequestSchema = z.strictObject({
   name: z.string().trim().min(1),

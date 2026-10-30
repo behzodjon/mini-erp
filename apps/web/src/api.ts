@@ -9,6 +9,9 @@ import type {
   CurrentUser,
   LoginRequest,
   Product,
+  Purchase,
+  SavePurchaseRequest,
+  StockByProductRow,
   UpdateProductRequest,
   Warehouse,
   WarehouseNode,
@@ -67,6 +70,14 @@ export const api = {
   createCounterparty: (body: CreateCounterpartyRequest) => request<Counterparty>("POST", "/api/counterparties", body),
   listCashEntries: () => request<CashListRow[]>("GET", "/api/cash-entries"),
   createCashEntry: (body: CreateCashEntryRequest) => request<CashEntry>("POST", "/api/cash-entries", body),
+
+  listPurchases: () => request<Purchase[]>("GET", "/api/purchases"),
+  createPurchase: (body: SavePurchaseRequest) => request<Purchase>("POST", "/api/purchases", body),
+  updatePurchase: (id: string, body: SavePurchaseRequest) => request<Purchase>("PUT", `/api/purchases/${id}`, body),
+  deletePurchase: (id: string) => request<void>("DELETE", `/api/purchases/${id}`),
+  executePurchase: (id: string) => request<Purchase>("POST", `/api/purchases/${id}/execute`),
+
+  stockByProduct: () => request<StockByProductRow[]>("GET", "/api/reports/stock"),
 
   warehouseTree: () => request<WarehouseNode[]>("GET", "/api/warehouses"),
   createWarehouse: (body: CreateWarehouseRequest) => request<Warehouse>("POST", "/api/warehouses", body),

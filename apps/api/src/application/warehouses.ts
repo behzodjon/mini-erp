@@ -1,6 +1,7 @@
 import type { WarehouseNode } from "@erp/shared";
-import { NotFoundError, WarehouseHasChildrenError } from "../domain/errors.js";
+import { NotFoundError, WarehouseHasChildrenError, WarehouseHasStockError } from "../domain/errors.js";
 import type { Warehouse } from "../domain/warehouse.js";
+import type { StockRepository } from "./ports/stock-repository.js";
 import type { WarehouseRepository } from "./ports/warehouse-repository.js";
 
 const toNode = ({ id, name, parentId }: Warehouse, children: WarehouseNode[]): WarehouseNode => ({ id, name, parentId, children });
@@ -13,7 +14,7 @@ function buildTree(warehouses: Warehouse[]): WarehouseNode[] {
   return branch(null);
 }
 
-export function makeWarehouseUseCases(deps: { warehouses: WarehouseRepository }) {
+export function makeWarehouseUseCases(deps: { warehouses: WarehouseRepository; stock: StockRepository }) {
   const orNotFound = (warehouse: Warehouse | null): Warehouse => {
     if (!warehouse) throw new NotFoundError("Warehouse");
     return warehouse;
@@ -38,6 +39,7 @@ export function makeWarehouseUseCases(deps: { warehouses: WarehouseRepository })
     async remove(id: string) {
       orNotFound(await deps.warehouses.findById(id));
       if (await deps.warehouses.hasChildren(id)) throw new WarehouseHasChildrenError();
+      if (await deps.stock.warehouseHoldsStock(id)) throw new WarehouseHasStockError();
       await deps.warehouses.delete(id);
     },
   };

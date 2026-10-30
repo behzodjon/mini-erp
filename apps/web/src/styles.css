@@ -2,7 +2,7 @@
 body { margin: 0; font-family: system-ui, sans-serif; color: #1f2937; background: #f3f4f6; }
 button { cursor: pointer; padding: 0.5rem 1rem; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font: inherit; }
 button:disabled { opacity: 0.6; cursor: default; }
-input { display: block; width: 100%; margin-top: 0.25rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; }
+input, select { display: block; width: 100%; margin-top: 0.25rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; }
 label { display: block; margin-bottom: 1rem; font-size: 0.9rem; }
 .center-note { text-align: center; margin-top: 4rem; }
 .login { display: grid; place-items: center; min-height: 100vh; }
@@ -43,3 +43,13 @@ main > section > ul.tree { padding-left: 0; }
 .tree-row .row-actions { display: flex; gap: 0.5rem; }
 
 td.negative { color: #b91c1c; font-weight: 600; }
+td.num-input input { text-align: right; }
+.lines { grid-column: 1 / -1; }
+.lines table.data { box-shadow: none; border: 1px solid #e5e7eb; }
+.lines table.data td { padding: 0.35rem 0.5rem; }
+.lines input, .lines select { margin: 0; }
+.status-draft { color: #92400e; }
+.status-executed { color: #166534; }
+.purchase-total { grid-column: 1 / -1; text-align: right; font-weight: 600; }
+tr.sub-row td { background: #f9fafb; }
+tr.sub-row td:first-child { padding-left: 2rem; }

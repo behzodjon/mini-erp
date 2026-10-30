@@ -5,6 +5,8 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import { api } from "./api";
 import { CashPage } from "./pages/CashPage";
 import { ProductsPage } from "./pages/ProductsPage";
+import { PurchasesPage } from "./pages/PurchasesPage";
+import { ReportsPage } from "./pages/ReportsPage";
 import { WarehousesPage } from "./pages/WarehousesPage";
 import { SESSION_KEY } from "./session";
 
@@ -22,7 +24,9 @@ const NAV = [
 const PAGES: Record<string, ReactElement> = {
   "/mahsulotlar": <ProductsPage />,
   "/omborlar": <WarehousesPage />,
+  "/xaridlar": <PurchasesPage />,
   "/kassa": <CashPage />,
+  "/hisobotlar": <ReportsPage />,
 };
 
 function Placeholder({ title }: { title: string }) {

@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { MongoClient } from "mongodb";
+import { makePurchaseUseCases } from "./application/purchases.js";
+import { makeReportUseCases } from "./application/reports.js";
 import { makeCashUseCases } from "./application/cash.js";
 import { makeCheckHealth } from "./application/check-health.js";
 import { makeCounterpartyUseCases } from "./application/counterparties.js";
@@ -14,6 +16,10 @@ import { makeMongoDatabaseHealth } from "./infrastructure/mongo/mongo-database-h
 import { makeMongoProductRepository } from "./infrastructure/mongo/mongo-product-repository.js";
 import { makeMongoSequenceCounter } from "./infrastructure/mongo/mongo-sequence-counter.js";
 import { makeMongoWarehouseRepository } from "./infrastructure/mongo/mongo-warehouse-repository.js";
+import { makeMongoPurchaseRepository } from "./infrastructure/mongo/mongo-purchase-repository.js";
+import { makeMongoExecutionUnitOfWork } from "./infrastructure/mongo/mongo-execution-unit-of-work.js";
+import { makeMongoStockRepository, ensureStockIndexes } from "./infrastructure/mongo/mongo-stock-repository.js";
+import { makeMongoUnitOfWork } from "./infrastructure/mongo/mongo-unit-of-work.js";
 import { buildHttpApp } from "./http/app.js";
 
 export type App = FastifyInstance;
@@ -29,20 +35,34 @@ export async function createApp(config: AppConfig): Promise<App> {
   });
 
   const db = mongo.db(config.mongodbDb);
+  await ensureStockIndexes(db);
   const checkHealth = makeCheckHealth({ database: makeMongoDatabaseHealth(db) });
-  const products = makeProductUseCases({ products: makeMongoProductRepository(db) });
 
-  const warehouses = makeWarehouseUseCases({ warehouses: makeMongoWarehouseRepository(db) });
+  const productRepository = makeMongoProductRepository(db);
+  const warehouseRepository = makeMongoWarehouseRepository(db);
+  const stockRepository = makeMongoStockRepository(db);
+  const sequence = makeMongoSequenceCounter(db);
+
+  const products = makeProductUseCases({ products: productRepository, stock: stockRepository });
+  const warehouses = makeWarehouseUseCases({ warehouses: warehouseRepository, stock: stockRepository });
+  const purchases = makePurchaseUseCases({
+    purchases: makeMongoPurchaseRepository(db),
+    products: productRepository,
+    warehouses: warehouseRepository,
+    sequence,
+    unitOfWork: makeMongoExecutionUnitOfWork(db, makeMongoUnitOfWork(mongo)),
+  });
+  const reports = makeReportUseCases({ products: productRepository, warehouses: warehouseRepository, stock: stockRepository });
 
   const counterpartyRepository = makeMongoCounterpartyRepository(db);
   const counterparties = makeCounterpartyUseCases({ counterparties: counterpartyRepository });
   const cash = makeCashUseCases({
     cash: makeMongoCashEntryRepository(db),
     counterparties: counterpartyRepository,
-    sequence: makeMongoSequenceCounter(db),
+    sequence,
   });
 
-  const app = await buildHttpApp({ login, checkHealth, products, warehouses, cash, counterparties, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
+  const app = await buildHttpApp({ login, checkHealth, products, warehouses, purchases, reports, cash, counterparties, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
   app.addHook("onClose", async () => {
     await mongo.close();
   });
