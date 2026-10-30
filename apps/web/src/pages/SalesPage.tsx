@@ -25,6 +25,13 @@ const piecesOf = (l: Pick<LineDraft, "unit" | "quantity">, product: Product | un
 const defaultPrice = (unit: QuantityUnit, product: Product | undefined) =>
   product ? String(product.defaultSalePrice * (unit === "block" ? product.piecesPerBlock : 1)) : "";
 
+/** A typed price keeps its meaning when the unit flips: the same goods, priced per block instead of per piece, or back. */
+function convertPrice(price: string, from: QuantityUnit, to: QuantityUnit, product: Product | undefined): string {
+  if (from === to || !product || price === "") return price;
+  const converted = from === "piece" ? Number(price) * product.piecesPerBlock : Number(price) / product.piecesPerBlock;
+  return String(Math.round(converted));
+}
+
 /** Turns a refused execution into a sentence that points at the lines to fix. */
 function describeFailure(error: unknown): string {
   if (error instanceof ApiError && error.code === "INSUFFICIENT_STOCK") {
@@ -196,7 +203,9 @@ function SaleForm({ sale, onDone, onCancel }: { sale: Sale | null; onDone: () =>
       all.map((l, i) => {
         if (i !== index) return l;
         const next = { ...l, ...changes };
-        return l.priceEdited ? next : { ...next, unitPrice: defaultPrice(next.unit, productById.get(next.productId)) };
+        const product = productById.get(next.productId);
+        if (!l.priceEdited) return { ...next, unitPrice: defaultPrice(next.unit, product) };
+        return { ...next, unitPrice: convertPrice(l.unitPrice, l.unit, next.unit, product) };
       }),
     );
   }
