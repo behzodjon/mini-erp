@@ -1,4 +1,5 @@
 import cookie from "@fastify/cookie";
+import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
 import { loginRequestSchema } from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
@@ -12,6 +13,7 @@ export type HttpDeps = {
   checkHealth: ReturnType<typeof makeCheckHealth>;
   sessionSecret: string;
   secureCookies: boolean;
+  webRoot?: string;
 };
 
 declare module "fastify" {
@@ -47,5 +49,26 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
 
   app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());
 
+  if (deps.webRoot) await registerWebApp(app, deps.webRoot);
+
   return app;
+}
+
+/** Serves the built web app; non-API paths that match no file get index.html so client-side routes survive a reload. */
+async function registerWebApp(app: FastifyInstance, webRoot: string): Promise<void> {
+  await app.register(async (web) => {
+    // Scoped to this plugin: only the static routes opt out of the session guard.
+    web.addHook("onRoute", (route) => {
+      route.config = { ...route.config, public: true };
+    });
+    await web.register(fastifyStatic, { root: webRoot, wildcard: false });
+    // The 404 route is not seen by onRoute, and Fastify's types omit `config` here although the guard reads it at runtime.
+    const publicRoute = { config: { public: true } } as unknown as Record<string, never>;
+    web.setNotFoundHandler(publicRoute, (request, reply) => {
+      if (request.method !== "GET" || request.url.startsWith("/api/")) {
+        return reply.status(404).send({ error: "not_found" });
+      }
+      return reply.sendFile("index.html");
+    });
+  });
 }

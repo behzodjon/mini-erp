@@ -32,3 +32,5 @@ The brief requires every prompt given to the AI to be documented. This file reco
 11. `/mattpocock-skills:implement ticket 01 [Image #1]`
     (Image #1 = a screenshot of the handoff summary from the end of session 1.)
     → The agent read ticket 01, the spec and the handoff document, then built the walking skeleton test-first.
+12. `/mattpocock-skills:implement ticket 02`
+    → The agent did the code side of "Deploy the walking skeleton": static serving, SPA fallback, production build and start, and a Render blueprint. Creating Atlas and Render and setting their env vars is left to the human.

@@ -8,8 +8,12 @@
     "dev": "pnpm --parallel --filter @erp/api --filter @erp/web dev",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "hash-password": "pnpm --filter @erp/api hash-password"
+    "hash-password": "pnpm --filter @erp/api hash-password",
+    "build": "pnpm --filter @erp/web build",
+    "start": "pnpm --filter @erp/api start:prod"
   },
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@10.30.3"
 }

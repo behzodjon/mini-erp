@@ -1,0 +1,26 @@
+# Render Blueprint: one web service serves the API and the built web app (one URL, no CORS).
+services:
+  - type: web
+    name: beverage-shop-erp
+    runtime: node
+    plan: free
+    healthCheckPath: /api/health
+    # devDependencies (vite, typescript) are needed to build the web app, even with NODE_ENV=production.
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEB_ROOT
+        value: ../web/dist # resolved from apps/api, where `pnpm start` runs
+      - key: MONGODB_DB
+        value: beverage_shop
+      # Set these in the Render dashboard (never committed):
+      - key: MONGODB_URI
+        sync: false
+      - key: OWNER_USERNAME
+        sync: false
+      - key: OWNER_PASSWORD_HASH
+        sync: false
+      - key: SESSION_SECRET
+        sync: false

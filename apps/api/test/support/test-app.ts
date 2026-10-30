@@ -13,7 +13,7 @@ export type TestApp = {
 };
 
 /** Builds the real app in-process against a throwaway single-node replica set (transactions work). */
-export async function startTestApp(): Promise<TestApp> {
+export async function startTestApp(options: { webRoot?: string } = {}): Promise<TestApp> {
   const replSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   const app = await createApp({
     port: 0,
@@ -23,6 +23,7 @@ export async function startTestApp(): Promise<TestApp> {
     ownerPasswordHash: bcrypt.hashSync(OWNER.password, 4),
     sessionSecret: "test-secret-test-secret-test-secret-1234",
     secureCookies: false,
+    webRoot: options.webRoot,
   });
 
   return {

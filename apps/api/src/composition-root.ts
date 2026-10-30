@@ -21,7 +21,7 @@ export async function createApp(config: AppConfig): Promise<App> {
 
   const checkHealth = makeCheckHealth({ database: makeMongoDatabaseHealth(mongo.db(config.mongodbDb)) });
 
-  const app = await buildHttpApp({ login, checkHealth, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies });
+  const app = await buildHttpApp({ login, checkHealth, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
   app.addHook("onClose", async () => {
     await mongo.close();
   });

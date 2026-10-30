@@ -27,3 +27,18 @@ pnpm dev                      # API on :3000, web on http://localhost:5173
 pnpm typecheck
 pnpm test   # API tests run in-process against an in-memory MongoDB replica set; Docker is not needed
 ```
+
+## Deploy (Render + MongoDB Atlas)
+
+One Render web service runs the API and serves the built web app, so there is one URL and no CORS. `render.yaml` is the blueprint.
+
+```sh
+pnpm build   # builds the web app into apps/web/dist
+pnpm start   # production: serves API + web app from Fastify (set NODE_ENV=production and WEB_ROOT=../web/dist)
+```
+
+1. Create a free MongoDB Atlas cluster (it is a replica set already, so transactions work). Allow Render to connect (network access `0.0.0.0/0` is fine for the free tier) and create a database user.
+2. In Render: New → Blueprint → pick this repo. Set the secret env vars it asks for: `MONGODB_URI` (the Atlas `mongodb+srv://` string), `OWNER_USERNAME`, `OWNER_PASSWORD_HASH` (from `pnpm hash-password <password>`) and `SESSION_SECRET` (32+ random chars).
+3. Open the URL: the login page shows, and `/api/health` reports `{"api":"ok","database":"ok"}`.
+
+Live URL: _(add after the first deploy)_
