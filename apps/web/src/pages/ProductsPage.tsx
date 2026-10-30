@@ -2,6 +2,7 @@ import type { Product } from "@erp/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api";
+import { formatBlocks } from "../lib";
 
 const PRODUCTS_KEY = ["products"] as const;
 const som = new Intl.NumberFormat("uz-UZ");
@@ -73,7 +74,7 @@ export function ProductsPage() {
               <th className="num">Blokda (dona)</th>
               <th className="num">Sotuv narxi (so'm)</th>
               <th className="num">O'rtacha tannarx (so'm)</th>
-              <th className="num">Qoldiq (dona)</th>
+              <th className="num">Qoldiq (dona / blok)</th>
               <th />
             </tr>
           </thead>
@@ -85,7 +86,15 @@ export function ProductsPage() {
                 <td className="num">{p.piecesPerBlock}</td>
                 <td className="num">{som.format(p.defaultSalePrice)}</td>
                 <td className="num">{som.format(p.averageCost)}</td>
-                <td className="num">{som.format(p.onHandQuantity)}</td>
+                <td className="num">
+                  {som.format(p.onHandQuantity)}
+                  <div className="muted">
+                    {formatBlocks({
+                      blocks: Math.floor(p.onHandQuantity / p.piecesPerBlock),
+                      remainderPieces: p.onHandQuantity % p.piecesPerBlock,
+                    })}
+                  </div>
+                </td>
                 <td className="row-actions">
                   <button className="secondary" onClick={() => setEditing(p)}>
                     Tahrirlash
