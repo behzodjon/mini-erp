@@ -2,11 +2,29 @@
 
 Stock, sales, purchases and cash for a small beverage shop. TypeScript monorepo: Fastify + MongoDB API, React web app, shared Zod schemas.
 
+**Live demo:** https://beverage-shop-erp.onrender.com (seeded with demo data; the first request after idle takes ~50 s on the free instance). The demo login is sent with the submission, not stored in the repo.
+
+## Documentation
+
+- [Architecture](docs/architecture.md): why it is built this way. It starts with the net-profit interpretation (loans and owner money move cash but are not profit).
+- [User guide, Uzbek](docs/user-guide.uz.md): task-by-task guide for the shop owner.
+- [Prompt log](docs/PROMPTS.md): every prompt given to the AI, in order.
+- [ADR 0001](docs/adr/0001-report-dates-and-shop-timezone.md): report dates and the shop timezone.
+
+## Layout
+
 ```
-apps/api         Fastify API: domain / application / infrastructure / http, wired in src/composition-root.ts
-apps/web         React + Vite UI (Uzbek)
-packages/shared  Zod schemas shared by API and web
-docs/PROMPTS.md  Every prompt given to the AI, in order
+apps/api            Fastify API
+  src/domain          pure rules (quantities, average cost, cash categories, P&L)
+  src/application     use cases and the ports they depend on
+  src/infrastructure  MongoDB adapters, bcrypt
+  src/http            routes, session cookie, error mapping
+  src/composition-root.ts  wires everything; scripts/ holds seed and hash-password
+  test/               Vitest tests, run through the HTTP API
+apps/web            React + Vite UI (Uzbek)
+packages/shared     Zod schemas shared by API and web
+docs/               architecture, user guide, prompt log, ADRs
+render.yaml         Render blueprint
 ```
 
 ## Run locally
@@ -29,6 +47,8 @@ pnpm dev                      # API on :3000, web on http://localhost:5173
 pnpm typecheck
 pnpm test   # API tests run in-process against an in-memory MongoDB replica set; Docker is not needed
 ```
+
+One test file: `cd apps/api && npx vitest run test/sales.test.ts`. The first run downloads a MongoDB binary for the in-memory server.
 
 ## Deploy (Render + MongoDB Atlas)
 
