@@ -24,6 +24,20 @@ export class WarehouseHasChildrenError extends DomainError {
   }
 }
 
+export class CounterpartyRequiredError extends DomainError {
+  readonly code = "COUNTERPARTY_REQUIRED";
+  constructor() {
+    super("Loan entries need a counterparty");
+  }
+}
+
+export class CategoryDirectionMismatchError extends DomainError {
+  readonly code = "CATEGORY_DIRECTION_MISMATCH";
+  constructor() {
+    super("This category cannot be used with the chosen direction");
+  }
+}
+
 export class NotFoundError extends DomainError {
   readonly code = "NOT_FOUND";
   constructor(what: string) {

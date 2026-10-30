@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { api } from "./api";
+import { CashPage } from "./pages/CashPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { WarehousesPage } from "./pages/WarehousesPage";
 import { SESSION_KEY } from "./session";
@@ -21,6 +22,7 @@ const NAV = [
 const PAGES: Record<string, ReactElement> = {
   "/mahsulotlar": <ProductsPage />,
   "/omborlar": <WarehousesPage />,
+  "/kassa": <CashPage />,
 };
 
 function Placeholder({ title }: { title: string }) {

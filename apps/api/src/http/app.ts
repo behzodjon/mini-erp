@@ -2,6 +2,8 @@ import cookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
 import {
+  createCashEntryRequestSchema,
+  createCounterpartyRequestSchema,
   createProductRequestSchema,
   createWarehouseRequestSchema,
   listProductsQuerySchema,
@@ -11,6 +13,8 @@ import {
 } from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
 import type { makeLogin } from "../application/login.js";
+import type { CashUseCases } from "../application/cash.js";
+import type { CounterpartyUseCases } from "../application/counterparties.js";
 import type { ProductUseCases } from "../application/products.js";
 import type { WarehouseUseCases } from "../application/warehouses.js";
 import { NotAuthenticatedError } from "../domain/errors.js";
@@ -22,6 +26,8 @@ export type HttpDeps = {
   checkHealth: ReturnType<typeof makeCheckHealth>;
   products: ProductUseCases;
   warehouses: WarehouseUseCases;
+  cash: CashUseCases;
+  counterparties: CounterpartyUseCases;
   sessionSecret: string;
   secureCookies: boolean;
   webRoot?: string;
@@ -91,6 +97,20 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
   app.delete<{ Params: { id: string } }>("/api/warehouses/:id", async (request, reply) => {
     await deps.warehouses.remove(request.params.id);
     return reply.status(204).send();
+  });
+
+  app.get("/api/counterparties", async () => deps.counterparties.list());
+
+  app.post("/api/counterparties", async (request, reply) => {
+    const counterparty = await deps.counterparties.create(createCounterpartyRequestSchema.parse(request.body));
+    return reply.status(201).send(counterparty);
+  });
+
+  app.get("/api/cash-entries", async () => deps.cash.list());
+
+  app.post("/api/cash-entries", async (request, reply) => {
+    const entry = await deps.cash.recordManualEntry(createCashEntryRequestSchema.parse(request.body));
+    return reply.status(201).send(entry);
   });
 
   app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());

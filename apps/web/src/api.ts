@@ -1,4 +1,9 @@
 import type {
+  CashEntry,
+  CashListRow,
+  Counterparty,
+  CreateCashEntryRequest,
+  CreateCounterpartyRequest,
   CreateProductRequest,
   CreateWarehouseRequest,
   CurrentUser,
@@ -57,6 +62,11 @@ export const api = {
   updateProduct: (id: string, body: UpdateProductRequest) => request<Product>("PATCH", `/api/products/${id}`, body),
   setProductArchived: (id: string, archived: boolean) =>
     request<Product>("POST", `/api/products/${id}/${archived ? "archive" : "unarchive"}`),
+
+  listCounterparties: () => request<Counterparty[]>("GET", "/api/counterparties"),
+  createCounterparty: (body: CreateCounterpartyRequest) => request<Counterparty>("POST", "/api/counterparties", body),
+  listCashEntries: () => request<CashListRow[]>("GET", "/api/cash-entries"),
+  createCashEntry: (body: CreateCashEntryRequest) => request<CashEntry>("POST", "/api/cash-entries", body),
 
   warehouseTree: () => request<WarehouseNode[]>("GET", "/api/warehouses"),
   createWarehouse: (body: CreateWarehouseRequest) => request<Warehouse>("POST", "/api/warehouses", body),

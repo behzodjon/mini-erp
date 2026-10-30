@@ -41,3 +41,5 @@ main > section > ul.tree { padding-left: 0; }
 .tree-row .toggle { width: 1.75rem; padding: 0.1rem 0; }
 .tree-row .tree-name { flex: 1; }
 .tree-row .row-actions { display: flex; gap: 0.5rem; }
+
+td.negative { color: #b91c1c; font-weight: 600; }
