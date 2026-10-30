@@ -94,15 +94,20 @@ export async function seedShop(shop: Shop, options: { force?: boolean } = {}): P
   });
 
   // Sales from several locations.
-  await executeSale({ date: day(8), lines: [block(cola05.id, counter.id, 3, 66_000), block(cola15.id, counter.id, 2, 66_000)] });
-  await executeSale({ date: day(4), lines: [block(fanta.id, fridge.id, 2, 102_000), block(cola05.id, fridge.id, 2, 66_000)] });
-  await executeSale({ date: day(2), lines: [block(cola05.id, rowA.id, 4, 66_000), block(water.id, rowB.id, 5, 21_000)] });
-  await executeSale({ date: day(1), lines: [block(water.id, counter.id, 3, 21_000), block(fanta.id, rowB.id, 3, 102_000)] });
+  await executeSale({ date: day(8), lines: [block(cola05.id, counter.id, 3, 80_000), block(cola15.id, counter.id, 2, 88_000)] });
+  await executeSale({ date: day(4), lines: [block(fanta.id, fridge.id, 2, 120_000), block(cola05.id, fridge.id, 2, 80_000)] });
+  await executeSale({ date: day(2), lines: [block(cola05.id, rowA.id, 4, 80_000), block(water.id, rowB.id, 5, 18_000)] });
+  await executeSale({ date: day(1), lines: [block(water.id, counter.id, 3, 18_000), block(fanta.id, rowB.id, 3, 120_000)] });
+
+  await executeSale({
+    date: day(5),
+    lines: [block(cola05.id, rowA.id, 8, 80_000), block(cola15.id, rowA.id, 6, 88_000), block(fanta.id, rowB.id, 5, 120_000)],
+  });
 
   // Running costs.
   await shop.cash.recordManualEntry({ direction: "out", category: "travel_cost", amount: 150_000, date: day(9), note: "Yetkazib berish" });
-  await shop.cash.recordManualEntry({ direction: "out", category: "rent", amount: 1_500_000, date: day(7) });
-  await shop.cash.recordManualEntry({ direction: "out", category: "salary", amount: 800_000, date: day(6) });
+  await shop.cash.recordManualEntry({ direction: "out", category: "rent", amount: 300_000, date: day(7) });
+  await shop.cash.recordManualEntry({ direction: "out", category: "salary", amount: 200_000, date: day(6) });
 
   // A count at the counter finds fewer Cola 0.5L than the books say.
   const shortCount = await shop.stockCounts.createDraft({
@@ -115,6 +120,6 @@ export async function seedShop(shop: Shop, options: { force?: boolean } = {}): P
 
   // One draft of each kind, left for the reviewer to open.
   await shop.purchases.createDraft({ date: day(0), lines: [block(cola15.id, rowA.id, 10, 61_200)] });
-  await shop.sales.createDraft({ date: day(0), lines: [block(cola05.id, fridge.id, 1, 66_000)] });
+  await shop.sales.createDraft({ date: day(0), lines: [block(cola05.id, fridge.id, 1, 80_000)] });
   await shop.stockCounts.createDraft({ date: day(0), warehouseId: fridge.id, lines: [{ productId: fanta.id, unit: "block", quantity: 4 }] });
 }

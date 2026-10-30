@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
+import type { StockByWarehouseNode } from "@erp/shared";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { composeUseCases, type UseCases } from "../src/composition-root.js";
 import { shopDayOf } from "../src/domain/shop-calendar.js";
@@ -27,6 +28,10 @@ const today = () => shopDayOf(new Date());
 const maxDepth = (nodes: { children: unknown[] }[]): number =>
   nodes.length === 0 ? 0 : 1 + Math.max(...nodes.map((n) => maxDepth(n.children as { children: unknown[] }[])));
 
+/** How many nodes hold stock themselves, not just through their children. */
+const nodesHoldingStock = (nodes: StockByWarehouseNode[]): number =>
+  nodes.reduce((count, n) => count + (n.own.length > 0 ? 1 : 0) + nodesHoldingStock(n.children), 0);
+
 beforeAll(async () => {
   replSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
 }, 120_000);
@@ -49,8 +54,7 @@ describe("seedShop", () => {
     const stockRows = await shop.reports.stockByProduct();
     expect(stockRows.filter((r) => r.pieces > 0).length).toBeGreaterThanOrEqual(3);
     const tree = await shop.reports.stockByWarehouse();
-    const nodesWithStock = JSON.stringify(tree).match(/"totalPieces":[1-9]/g) ?? [];
-    expect(nodesWithStock.length).toBeGreaterThanOrEqual(3);
+    expect(nodesHoldingStock(tree)).toBeGreaterThanOrEqual(3);
 
     const range = { from: `${today().slice(0, 8)}01`, to: today() };
     const sales = await shop.reports.sales(range);
@@ -61,7 +65,7 @@ describe("seedShop", () => {
     expect(pnl.costOfGoodsSold).toBeGreaterThan(0);
     expect(pnl.totalExpenses).toBeGreaterThan(0);
     expect(pnl.stockCountResult).toBeLessThan(0);
-    expect(pnl.netProfit).not.toBe(0);
+    expect(pnl.netProfit).toBeGreaterThan(0);
 
     const debts = await shop.reports.cashAndDebts();
     expect(debts.owedToMe.length).toBeGreaterThan(0);

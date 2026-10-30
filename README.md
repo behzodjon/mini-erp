@@ -43,3 +43,7 @@ pnpm start   # production: serves API + web app from Fastify (set NODE_ENV=produ
 3. Open the URL: the login page shows, and `/api/health` reports `{"api":"ok","database":"ok"}`.
 
 Live URL: https://beverage-shop-erp.onrender.com (free instance: the first request after idle takes ~50 s)
+
+## Demo data
+
+`pnpm seed` builds a running shop through the use cases (products, a warehouse tree, purchases, sales, a stock count with a shortage, loans in both directions, expenses, and one draft of each document). It reads the same `.env` as the API, so pointing `MONGODB_URI` at Atlas seeds the live database. The login is whatever `OWNER_USERNAME` and the password behind `OWNER_PASSWORD_HASH` are; share those with the reviewer.
