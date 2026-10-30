@@ -21,5 +21,16 @@ export function makeMongoCashEntryRepository(db: Db, session?: ClientSession): C
       const docs = await entries.find().sort({ date: 1, _id: 1 }).toArray();
       return docs.map(toRecord);
     },
+
+    // `date` is an ISO day string, so string comparison is calendar order.
+    async totalsByCategory({ from, to }) {
+      const groups = await entries
+        .aggregate<{ _id: CashRecord["category"]; total: number }>(
+          [{ $match: { date: { $gte: from, $lte: to } } }, { $group: { _id: "$category", total: { $sum: "$amount" } } }],
+          { session },
+        )
+        .toArray();
+      return groups.map((g) => ({ category: g._id, total: g.total }));
+    },
   };
 }

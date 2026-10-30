@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../api";
 import { formatBlocks, som } from "../lib";
+import { PnlReport } from "./PnlReport";
 import { SalesReport } from "./SalesReport";
 
-type Report = "stock" | "sales";
+type Report = "stock" | "sales" | "pnl";
 
 export function ReportsPage() {
   const [report, setReport] = useState<Report>("stock");
@@ -19,8 +20,11 @@ export function ReportsPage() {
         <button className={report === "sales" ? "" : "secondary"} aria-pressed={report === "sales"} onClick={() => setReport("sales")}>
           Savdo
         </button>
+        <button className={report === "pnl" ? "" : "secondary"} aria-pressed={report === "pnl"} onClick={() => setReport("pnl")}>
+          Foyda va zarar
+        </button>
       </div>
-      {report === "stock" ? <StockReport /> : <SalesReport />}
+      {report === "stock" ? <StockReport /> : report === "sales" ? <SalesReport /> : <PnlReport />}
     </section>
   );
 }

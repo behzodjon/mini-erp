@@ -1,5 +1,7 @@
 import type {
+  CashAndDebts,
   DateRangeQuery,
+  PnlReport,
   SalesByProductRow,
   SalesFigures,
   SalesReport,
@@ -10,12 +12,16 @@ import type {
   StockProductLine,
   StockQuantity,
 } from "@erp/shared";
+import { signedAmount } from "../domain/cash.js";
+import { composePnl, debtBalances } from "../domain/pnl.js";
 import { splitIntoBlocks } from "../domain/quantity.js";
 import { asExecuted, type ExecutedSale } from "../domain/sale.js";
 import { shopDayOf, shopDaysRange } from "../domain/shop-calendar.js";
 import type { Warehouse } from "../domain/warehouse.js";
+import type { CashEntryRepository, CounterpartyRepository } from "./ports/cash-repositories.js";
 import type { ProductRepository } from "./ports/product-repository.js";
 import type { SaleRepository } from "./ports/sale-repository.js";
+import type { StockCountRepository } from "./ports/stock-count-repository.js";
 import type { StockRepository } from "./ports/stock-repository.js";
 import type { WarehouseRepository } from "./ports/warehouse-repository.js";
 
@@ -89,7 +95,24 @@ function salesReport(sales: ExecutedSale[], products: { id: string; name: string
   };
 }
 
-export function makeReportUseCases(deps: { products: ProductRepository; sales: SaleRepository; warehouses: WarehouseRepository; stock: StockRepository }) {
+export function makeReportUseCases(deps: {
+  products: ProductRepository;
+  sales: SaleRepository;
+  stockCounts: StockCountRepository;
+  cash: CashEntryRepository;
+  counterparties: CounterpartyRepository;
+  warehouses: WarehouseRepository;
+  stock: StockRepository;
+}) {
+  const salesIn = async ({ from, to }: DateRangeQuery): Promise<SalesReport> => {
+    const { start, end } = shopDaysRange(from, to);
+    const [sales, products] = await Promise.all([
+      deps.sales.listExecuted({ from: start, until: end }),
+      deps.products.list({ includeArchived: true }),
+    ]);
+    return salesReport(sales.map(asExecuted), products);
+  };
+
   return {
     /** Every active product, plus archived ones that still hold stock, with where the stock sits. */
     async stockByProduct(): Promise<StockByProductRow[]> {
@@ -167,13 +190,30 @@ export function makeReportUseCases(deps: { products: ProductRepository; sales: S
      * Executed sales whose execution falls on a shop day in the range, both ends included.
      * Cost of goods sold is the average cost each line stored when it was executed.
      */
-    async sales({ from, to }: DateRangeQuery): Promise<SalesReport> {
-      const { start, end } = shopDaysRange(from, to);
-      const [sales, products] = await Promise.all([
-        deps.sales.listExecuted({ from: start, until: end }),
-        deps.products.list({ includeArchived: true }),
+    sales: salesIn,
+
+    /**
+     * Net profit over the range. Sales and stock counts count on the shop day they were executed;
+     * expenses and other income on the date of their cash entry.
+     */
+    async pnl(range: DateRangeQuery): Promise<PnlReport> {
+      const { start, end } = shopDaysRange(range.from, range.to);
+      const [{ summary }, cashTotals, stockCountResult] = await Promise.all([
+        salesIn(range),
+        deps.cash.totalsByCategory(range),
+        deps.stockCounts.executedValue({ from: start, until: end }),
       ]);
-      return salesReport(sales.map(asExecuted), products);
+      const { revenue, costOfGoodsSold, grossProfit } = summary;
+      return composePnl({ sales: { revenue, costOfGoodsSold, grossProfit }, cashTotals, stockCountResult });
+    },
+
+    /** The cash balance as of every entry so far, and who owes what: the money that is not profit but still matters. */
+    async cashAndDebts(): Promise<CashAndDebts> {
+      const [records, counterparties] = await Promise.all([deps.cash.list(), deps.counterparties.list()]);
+      return {
+        cashBalance: records.reduce((sum, r) => sum + signedAmount(r), 0),
+        ...debtBalances(records, new Map(counterparties.map((c) => [c.id, c.name]))),
+      };
     },
 
     /** What one node holds of each product, so a count can show it next to the counted quantity. */

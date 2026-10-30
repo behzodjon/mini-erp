@@ -1,33 +1,20 @@
 import type { SalesFigures } from "@erp/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
-import { formatBlocks, shopToday, som } from "../lib";
-
-/** The first day of the month containing `day` (YYYY-MM-DD). */
-const monthStart = (day: string) => `${day.slice(0, 8)}01`;
+import { formatBlocks, som } from "../lib";
+import { DateRangeFields, useDateRange } from "./DateRangeFields";
 
 export function SalesReport() {
-  const [from, setFrom] = useState(() => monthStart(shopToday()));
-  const [to, setTo] = useState(shopToday);
-  const validRange = from !== "" && to !== "" && from <= to;
+  const range = useDateRange();
+  const { from, to, valid: validRange } = range;
   const report = useQuery({ queryKey: ["sales-report", from, to], queryFn: () => api.salesReport(from, to), enabled: validRange });
 
   return (
     <>
       <h3>Savdo</h3>
-      <div className="toolbar">
-        <label>
-          Boshlanish sanasi
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-        </label>
-        <label>
-          Tugash sanasi
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        </label>
-      </div>
-      {!validRange && <p className="error">Sana oralig'ini to'g'ri tanlang.</p>}
+      <DateRangeFields range={range} />
       {validRange && report.isPending && <p className="muted">Yuklanmoqda…</p>}
       {validRange && report.isError && <p className="error">Hisobotni yuklab bo'lmadi.</p>}
       {validRange && report.data && (

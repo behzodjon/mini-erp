@@ -191,6 +191,10 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
 
   app.get("/api/reports/sales", async (request) => deps.reports.sales(dateRangeQuerySchema.parse(request.query)));
 
+  app.get("/api/reports/pnl", async (request) => deps.reports.pnl(dateRangeQuerySchema.parse(request.query)));
+
+  app.get("/api/reports/cash-and-debts", async () => deps.reports.cashAndDebts());
+
   app.get<{ Params: { warehouseId: string } }>("/api/reports/stock-at/:warehouseId", async (request) =>
     deps.reports.stockAtNode(request.params.warehouseId),
   );

@@ -75,3 +75,29 @@ export type SalesReport = {
   /** Oldest first. */
   sales: SalesReportEntry[];
 };
+
+/** Operating expense categories, in the order the P&L lists them. */
+export const expenseCategories = ["travel_cost", "rent", "salary", "other_expense"] as const;
+export type ExpenseCategory = (typeof expenseCategories)[number];
+
+export type PnlReport = SalesFigures & {
+  /** Always every expense category, zero or not. */
+  expenses: { category: ExpenseCategory; amount: number }[];
+  totalExpenses: number;
+  /** Net value of executed stock counts at average cost: negative for shrinkage, positive for a surplus. */
+  stockCountResult: number;
+  otherIncome: number;
+  netProfit: number;
+};
+
+/** What one counterparty owes the shop or is owed by it; only non-zero balances are listed. */
+export type DebtBalance = { counterpartyId: string; counterpartyName: string; amount: number };
+
+export type CashAndDebts = {
+  /** May be negative. */
+  cashBalance: number;
+  /** Loans given − repayments received. */
+  owedToMe: DebtBalance[];
+  /** Loans received − repayments paid. */
+  iOwe: DebtBalance[];
+};

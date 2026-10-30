@@ -65,19 +65,29 @@ export async function createApp(config: AppConfig): Promise<App> {
     sequence,
     unitOfWork: executionUnitOfWork,
   });
+  const stockCountRepository = makeMongoStockCountRepository(db);
   const stockCounts = makeStockCountUseCases({
-    stockCounts: makeMongoStockCountRepository(db),
+    stockCounts: stockCountRepository,
     products: productRepository,
     warehouses: warehouseRepository,
     sequence,
     unitOfWork: executionUnitOfWork,
   });
-  const reports = makeReportUseCases({ products: productRepository, sales: saleRepository, warehouses: warehouseRepository, stock: stockRepository });
-
   const counterpartyRepository = makeMongoCounterpartyRepository(db);
+  const cashRepository = makeMongoCashEntryRepository(db);
+  const reports = makeReportUseCases({
+    products: productRepository,
+    sales: saleRepository,
+    stockCounts: stockCountRepository,
+    cash: cashRepository,
+    counterparties: counterpartyRepository,
+    warehouses: warehouseRepository,
+    stock: stockRepository,
+  });
+
   const counterparties = makeCounterpartyUseCases({ counterparties: counterpartyRepository });
   const cash = makeCashUseCases({
-    cash: makeMongoCashEntryRepository(db),
+    cash: cashRepository,
     counterparties: counterpartyRepository,
     sequence,
   });

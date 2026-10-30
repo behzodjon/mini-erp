@@ -1,0 +1,53 @@
+import { expenseCategories, type CashCategory, type DebtBalance, type PnlReport, type SalesFigures } from "@erp/shared";
+import { pnlEffectOf } from "./cash-category.js";
+import type { CashRecord } from "./cash.js";
+
+export type CategoryTotal = { category: CashCategory; total: number };
+
+/**
+ * Net profit from the sales figures, the cash totals of the range and the stock count result.
+ * Cash totals are read through the category classification: only operating expenses and other income
+ * count. Revenue comes from the sales themselves, and loans, owner money and purchases never reach it.
+ */
+export function composePnl(input: { sales: SalesFigures; cashTotals: CategoryTotal[]; stockCountResult: number }): PnlReport {
+  const totalOf = (category: CashCategory) =>
+    input.cashTotals.filter((t) => t.category === category && pnlEffectOf(t.category) !== "none").reduce((sum, t) => sum + t.total, 0);
+
+  const expenses = expenseCategories.map((category) => ({ category, amount: totalOf(category) }));
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const otherIncome = totalOf("other_income");
+
+  return {
+    ...input.sales,
+    expenses,
+    totalExpenses,
+    stockCountResult: input.stockCountResult,
+    otherIncome,
+    netProfit: input.sales.grossProfit - totalExpenses + input.stockCountResult + otherIncome,
+  };
+}
+
+/** Per counterparty: loans given − repayments received, and loans received − repayments paid. Settled balances are left out. */
+export function debtBalances(
+  records: Pick<CashRecord, "category" | "counterpartyId" | "amount">[],
+  counterpartyNames: ReadonlyMap<string, string>,
+): { owedToMe: DebtBalance[]; iOwe: DebtBalance[] } {
+  const owed = new Map<string, number>();
+  const owing = new Map<string, number>();
+  const add = (balances: Map<string, number>, id: string, amount: number) => balances.set(id, (balances.get(id) ?? 0) + amount);
+
+  for (const { category, counterpartyId, amount } of records) {
+    if (!counterpartyId) continue;
+    if (category === "loan_given") add(owed, counterpartyId, amount);
+    else if (category === "loan_repayment_received") add(owed, counterpartyId, -amount);
+    else if (category === "loan_received") add(owing, counterpartyId, amount);
+    else if (category === "loan_repayment_paid") add(owing, counterpartyId, -amount);
+  }
+
+  const rows = (balances: Map<string, number>): DebtBalance[] =>
+    [...balances]
+      .filter(([, amount]) => amount !== 0)
+      .map(([counterpartyId, amount]) => ({ counterpartyId, counterpartyName: counterpartyNames.get(counterpartyId) ?? "?", amount }))
+      .sort((a, b) => a.counterpartyName.localeCompare(b.counterpartyName));
+  return { owedToMe: rows(owed), iOwe: rows(owing) };
+}

@@ -1,4 +1,5 @@
 import type {
+  CashAndDebts,
   CashEntry,
   CashListRow,
   Counterparty,
@@ -8,6 +9,7 @@ import type {
   CreateWarehouseRequest,
   CurrentUser,
   LoginRequest,
+  PnlReport,
   Product,
   Purchase,
   Sale,
@@ -101,6 +103,8 @@ export const api = {
 
   stockAtNode: (warehouseId: string) => request<StockAtNodeRow[]>("GET", `/api/reports/stock-at/${warehouseId}`),
   salesReport: (from: string, to: string) => request<SalesReport>("GET", `/api/reports/sales?from=${from}&to=${to}`),
+  pnlReport: (from: string, to: string) => request<PnlReport>("GET", `/api/reports/pnl?from=${from}&to=${to}`),
+  cashAndDebts: () => request<CashAndDebts>("GET", "/api/reports/cash-and-debts"),
   stockByProduct: () => request<StockByProductRow[]>("GET", "/api/reports/stock"),
   stockByWarehouse: () => request<StockByWarehouseNode[]>("GET", "/api/reports/stock-by-warehouse"),
 

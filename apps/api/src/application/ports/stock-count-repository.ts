@@ -8,6 +8,8 @@ export interface StockCountRepository {
   findById(id: string): Promise<StockCount | null>;
   /** Newest first. */
   list(): Promise<StockCount[]>;
+  /** The summed value of the counts executed in [from, until): negative when they found more shortage than surplus. */
+  executedValue(range: { from: Date; until: Date }): Promise<number>;
   /** Resolves null when the count does not exist or is no longer a draft. */
   replaceDraft(id: string, content: StockCountContent): Promise<StockCount | null>;
   /** False when the count does not exist or is no longer a draft. */

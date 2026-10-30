@@ -32,6 +32,19 @@ export function makeMongoStockCountRepository(db: Db, session?: ClientSession): 
       return (await counts.find({}, { session }).sort({ _id: -1 }).toArray()).map(toStockCount);
     },
 
+    async executedValue({ from, until }) {
+      const [sum] = await counts
+        .aggregate<{ total: number }>(
+          [
+            { $match: { status: "executed", executedAt: { $gte: from, $lt: until } } },
+            { $group: { _id: null, total: { $sum: "$totalValue" } } },
+          ],
+          { session },
+        )
+        .toArray();
+      return sum?.total ?? 0;
+    },
+
     async replaceDraft(id, content) {
       const filter = idFilter(id);
       const doc = filter && (await counts.findOneAndUpdate({ ...filter, status: "draft" }, { $set: content }, { returnDocument: "after", session }));

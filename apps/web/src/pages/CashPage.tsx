@@ -8,26 +8,12 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api";
+import { CATEGORY_LABEL } from "../lib";
 
 const CASH_KEY = ["cash-entries"] as const;
 const COUNTERPARTIES_KEY = ["counterparties"] as const;
 const som = new Intl.NumberFormat("uz-UZ");
 
-const CATEGORY_LABEL: Record<CashCategory, string> = {
-  sale: "Savdo",
-  purchase: "Xarid",
-  loan_received: "Qarz olindi",
-  loan_repayment_received: "Berilgan qarz qaytarildi",
-  owner_contribution: "Egasi kiritdi / boshlang'ich kassa",
-  other_income: "Boshqa daromad",
-  loan_given: "Qarz berildi",
-  loan_repayment_paid: "Olingan qarz qaytarildi",
-  owner_withdrawal: "Egasi yechib oldi",
-  travel_cost: "Yo'l kira",
-  rent: "Ijara",
-  salary: "Oylik",
-  other_expense: "Boshqa xarajat",
-};
 const LOAN_CATEGORIES: readonly CashCategory[] = ["loan_received", "loan_repayment_received", "loan_given", "loan_repayment_paid"];
 const CATEGORIES_FOR: Record<CashDirection, readonly ManualCashCategory[]> = {
   in: manualInflowCategories,
