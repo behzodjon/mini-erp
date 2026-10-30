@@ -1,6 +1,6 @@
 import type { SalesFigures } from "@erp/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import { formatBlocks, shopToday, som } from "../lib";
@@ -32,87 +32,78 @@ export function SalesReport() {
       {validRange && report.isError && <p className="error">Hisobotni yuklab bo'lmadi.</p>}
       {validRange && report.data && (
         <>
-          <table className="data">
-            <thead>
-              <tr>
-                <th className="num">Savdolar soni</th>
-                <th className="num">Tushum (so'm)</th>
-                <th className="num">Tannarx (so'm)</th>
-                <th className="num">Yalpi foyda (so'm)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="num">{som.format(report.data.summary.count)}</td>
-                <FiguresCells figures={report.data.summary} />
-              </tr>
-            </tbody>
-          </table>
+          <ReportTable columns={["Savdolar soni", ...FIGURE_COLUMNS]} numeric={[true, true, true, true]} empty="">
+            <tr>
+              <td className="num">{som.format(report.data.summary.count)}</td>
+              <FiguresCells figures={report.data.summary} />
+            </tr>
+          </ReportTable>
 
           <h4>Mahsulotlar bo'yicha</h4>
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Mahsulot</th>
-                <th className="num">Sotilgan (dona)</th>
-                <th className="num">Blok + dona</th>
-                <th className="num">Tushum (so'm)</th>
-                <th className="num">Tannarx (so'm)</th>
-                <th className="num">Yalpi foyda (so'm)</th>
+          <ReportTable
+            columns={["Mahsulot", "Sotilgan (dona)", "Blok + dona", ...FIGURE_COLUMNS]}
+            numeric={[false, true, true, true, true, true]}
+            empty={report.data.products.length === 0 ? EMPTY : ""}
+          >
+            {report.data.products.map((row) => (
+              <tr key={row.productId}>
+                <td>{row.productName}</td>
+                <td className="num">{som.format(row.pieces)}</td>
+                <td className="num">{formatBlocks(row)}</td>
+                <FiguresCells figures={row} />
               </tr>
-            </thead>
-            <tbody>
-              {report.data.products.map((row) => (
-                <tr key={row.productId}>
-                  <td>{row.productName}</td>
-                  <td className="num">{som.format(row.pieces)}</td>
-                  <td className="num">{formatBlocks(row)}</td>
-                  <FiguresCells figures={row} />
-                </tr>
-              ))}
-              {report.data.products.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="muted">
-                    Bu oraliqda savdo yo'q.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            ))}
+          </ReportTable>
 
           <h4>Bajarilgan savdolar</h4>
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Raqam</th>
-                <th>Sana</th>
-                <th className="num">Tushum (so'm)</th>
-                <th className="num">Tannarx (so'm)</th>
-                <th className="num">Yalpi foyda (so'm)</th>
+          <ReportTable
+            columns={["Raqam", "Bajarilgan sana", ...FIGURE_COLUMNS]}
+            numeric={[false, false, true, true, true]}
+            empty={report.data.sales.length === 0 ? EMPTY : ""}
+          >
+            {report.data.sales.map((s) => (
+              <tr key={s.id}>
+                <td>
+                  <Link to={`/savdolar/${s.id}`}>{s.number}</Link>
+                </td>
+                <td>{s.executedOn}</td>
+                <FiguresCells figures={s} />
               </tr>
-            </thead>
-            <tbody>
-              {report.data.sales.map((s) => (
-                <tr key={s.id}>
-                  <td>
-                    <Link to={`/savdolar/${s.id}`}>{s.number}</Link>
-                  </td>
-                  <td>{s.date}</td>
-                  <FiguresCells figures={s} />
-                </tr>
-              ))}
-              {report.data.sales.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="muted">
-                    Bu oraliqda savdo yo'q.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            ))}
+          </ReportTable>
         </>
       )}
     </>
+  );
+}
+
+const EMPTY = "Bu oraliqda savdo yo'q.";
+const FIGURE_COLUMNS = ["Tushum (so'm)", "Tannarx (so'm)", "Yalpi foyda (so'm)"];
+
+/** A report table; a non-empty `empty` shows that text in place of rows. */
+function ReportTable({ columns, numeric, empty, children }: { columns: string[]; numeric: boolean[]; empty: string; children: ReactNode }) {
+  return (
+    <table className="data">
+      <thead>
+        <tr>
+          {columns.map((label, i) => (
+            <th key={label} className={numeric[i] ? "num" : undefined}>
+              {label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {children}
+        {empty !== "" && (
+          <tr>
+            <td colSpan={columns.length} className="muted">
+              {empty}
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
   );
 }
 

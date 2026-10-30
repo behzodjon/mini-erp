@@ -3,6 +3,26 @@ import type { StockBalance } from "./stock.js";
 
 export type { Sale, SaleLine };
 
+/** A sale that has been executed: it has an execution time and every line carries the cost it left the shelf at. */
+export type ExecutedSale = Omit<Sale, "executedAt" | "lines"> & {
+  executedAt: string;
+  lines: (SaleLine & { costPerPiece: number })[];
+};
+
+/** Narrows a stored sale that should be executed; a sale missing its execution data is corrupt, not zero. */
+export function asExecuted(sale: Sale): ExecutedSale {
+  const { executedAt, lines } = sale;
+  if (sale.status !== "executed" || executedAt === null) throw new Error(`Sale ${sale.number} is not executed`);
+  return {
+    ...sale,
+    executedAt,
+    lines: lines.map((l) => {
+      if (l.costPerPiece === null) throw new Error(`Sale ${sale.number} has a line without its stored cost`);
+      return { ...l, costPerPiece: l.costPerPiece };
+    }),
+  };
+}
+
 /** A sale before it has an id. */
 export type NewSale = Omit<Sale, "id">;
 

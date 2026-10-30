@@ -104,6 +104,7 @@ describe("sales report", () => {
     expect(result.sales.map((s: Json) => s.id).sort()).toEqual([first.id, second.id].sort());
     expect(result.sales.find((s: Json) => s.id === second.id)).toMatchObject({
       number: second.number,
+      executedOn: shopDay(),
       revenue: 36_000,
       costOfGoodsSold: 26_000,
       grossProfit: 10_000,

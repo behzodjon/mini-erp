@@ -3,6 +3,7 @@ import type {
   SalesByProductRow,
   SalesFigures,
   SalesReport,
+  SalesReportEntry,
   StockAtNodeRow,
   StockByProductRow,
   StockByWarehouseNode,
@@ -10,7 +11,8 @@ import type {
   StockQuantity,
 } from "@erp/shared";
 import { splitIntoBlocks } from "../domain/quantity.js";
-import { shopDaysRange } from "../domain/shop-calendar.js";
+import { asExecuted, type ExecutedSale } from "../domain/sale.js";
+import { shopDayOf, shopDaysRange } from "../domain/shop-calendar.js";
 import type { Warehouse } from "../domain/warehouse.js";
 import type { ProductRepository } from "./ports/product-repository.js";
 import type { SaleRepository } from "./ports/sale-repository.js";
@@ -36,6 +38,56 @@ const productLine = (p: { id: string; name: string; piecesPerBlock: number; aver
 type Totals = Map<string, Map<string, number>>;
 
 const withProfit = (revenue: number, costOfGoodsSold: number): SalesFigures => ({ revenue, costOfGoodsSold, grossProfit: revenue - costOfGoodsSold });
+
+type ProductFigures = { pieces: number; revenue: number; costOfGoodsSold: number };
+
+/**
+ * One pass over the executed sales: each line adds to its sale's entry and to its product's row.
+ * Revenue is the sum of line totals and cost is pieces × the cost stored on the line, so the summary,
+ * the product rows and the sales list all come from the same numbers.
+ */
+function salesReport(sales: ExecutedSale[], products: { id: string; name: string; piecesPerBlock: number }[]): SalesReport {
+  const productById = new Map(products.map((p) => [p.id, p]));
+  const perProduct = new Map<string, ProductFigures>();
+  const entries: SalesReportEntry[] = [];
+
+  for (const sale of sales) {
+    let revenue = 0;
+    let costOfGoodsSold = 0;
+    for (const l of sale.lines) {
+      const lineCost = l.pieces * l.costPerPiece;
+      revenue += l.lineTotal;
+      costOfGoodsSold += lineCost;
+      const row = perProduct.get(l.productId) ?? { pieces: 0, revenue: 0, costOfGoodsSold: 0 };
+      perProduct.set(l.productId, {
+        pieces: row.pieces + l.pieces,
+        revenue: row.revenue + l.lineTotal,
+        costOfGoodsSold: row.costOfGoodsSold + lineCost,
+      });
+    }
+    entries.push({
+      id: sale.id,
+      number: sale.number,
+      date: sale.date,
+      executedOn: shopDayOf(new Date(sale.executedAt)),
+      ...withProfit(revenue, costOfGoodsSold),
+    });
+  }
+
+  const rows: SalesByProductRow[] = [...perProduct]
+    .map(([productId, row]) => {
+      const p = productById.get(productId)!;
+      return { productId, productName: p.name, piecesPerBlock: p.piecesPerBlock, ...quantity(row.pieces, p.piecesPerBlock), ...withProfit(row.revenue, row.costOfGoodsSold) };
+    })
+    .sort((x, y) => x.productName.localeCompare(y.productName));
+
+  const total = (pick: (e: SalesFigures) => number) => entries.reduce((sum, e) => sum + pick(e), 0);
+  return {
+    summary: { count: entries.length, ...withProfit(total((e) => e.revenue), total((e) => e.costOfGoodsSold)) },
+    products: rows,
+    sales: entries,
+  };
+}
 
 export function makeReportUseCases(deps: { products: ProductRepository; sales: SaleRepository; warehouses: WarehouseRepository; stock: StockRepository }) {
   return {
@@ -121,33 +173,7 @@ export function makeReportUseCases(deps: { products: ProductRepository; sales: S
         deps.sales.listExecuted({ from: start, until: end }),
         deps.products.list({ includeArchived: true }),
       ]);
-      const productById = new Map(products.map((p) => [p.id, p]));
-
-      const perProduct = new Map<string, { pieces: number; revenue: number; cost: number }>();
-      const entries = sales.map((sale) => {
-        let cost = 0;
-        for (const l of sale.lines) {
-          const lineCost = l.pieces * l.costPerPiece!;
-          cost += lineCost;
-          const row = perProduct.get(l.productId) ?? { pieces: 0, revenue: 0, cost: 0 };
-          perProduct.set(l.productId, { pieces: row.pieces + l.pieces, revenue: row.revenue + l.lineTotal, cost: row.cost + lineCost });
-        }
-        return { id: sale.id, number: sale.number, date: sale.date, executedAt: sale.executedAt!, ...withProfit(sale.total, cost) };
-      });
-
-      const rows: SalesByProductRow[] = [...perProduct]
-        .map(([productId, row]) => {
-          const p = productById.get(productId)!;
-          return { productId, productName: p.name, piecesPerBlock: p.piecesPerBlock, ...quantity(row.pieces, p.piecesPerBlock), ...withProfit(row.revenue, row.cost) };
-        })
-        .sort((a, b) => a.productName.localeCompare(b.productName));
-
-      const sum = (pick: (e: SalesFigures) => number) => entries.reduce((total, e) => total + pick(e), 0);
-      return {
-        summary: { count: entries.length, ...withProfit(sum((e) => e.revenue), sum((e) => e.costOfGoodsSold)) },
-        products: rows,
-        sales: entries,
-      };
+      return salesReport(sales.map(asExecuted), products);
     },
 
     /** What one node holds of each product, so a count can show it next to the counted quantity. */

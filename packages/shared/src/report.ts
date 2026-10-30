@@ -63,8 +63,10 @@ export type SalesByProductRow = StockQuantity &
 export type SalesReportEntry = SalesFigures & {
   id: string;
   number: string;
+  /** The document date. */
   date: string;
-  executedAt: string;
+  /** The shop day the sale was executed on, which is what the range filters by. */
+  executedOn: string;
 };
 
 export type SalesReport = {
