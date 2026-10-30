@@ -13,6 +13,8 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** The API's machine-readable error code, when the response body carried one. */
+    readonly code?: string,
   ) {
     super(message);
   }
@@ -25,7 +27,10 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     headers: body === undefined ? undefined : { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!res.ok) throw new ApiError(res.status, res.statusText);
+  if (!res.ok) {
+    const error = (await res.json().catch(() => null)) as { code?: string } | null;
+    throw new ApiError(res.status, res.statusText, error?.code);
+  }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
 

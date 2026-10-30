@@ -4,7 +4,7 @@ const warehouseName = z.string().trim().min(1);
 
 export const createWarehouseRequestSchema = z.strictObject({
   name: warehouseName,
-  parentId: z.string().nullish(),
+  parentId: z.string().min(1).nullish(),
 });
 
 /** Only the name can change; a node never moves. */

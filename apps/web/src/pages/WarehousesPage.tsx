@@ -1,7 +1,7 @@
 import type { WarehouseNode } from "@erp/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { api } from "../api";
+import { api, ApiError } from "../api";
 
 const WAREHOUSES_KEY = ["warehouses"] as const;
 
@@ -36,9 +36,11 @@ export function WarehousesPage() {
         />
       )}
 
-      {remove.isError && (
+      {remove.error && (
         <p role="alert" className="error">
-          O'chirib bo'lmadi. Ichida sub-omborlar bo'lsa, avval ularni o'chiring.
+          {remove.error instanceof ApiError && remove.error.code === "WAREHOUSE_HAS_CHILDREN"
+            ? "Ichida sub-omborlar bor. Avval ularni o'chiring."
+            : "O'chirib bo'lmadi. Qayta urinib ko'ring."}
         </p>
       )}
       {tree.isPending && <p className="muted">Yuklanmoqda…</p>}
@@ -52,7 +54,9 @@ export function WarehousesPage() {
               node={node}
               onAddChild={(parent) => setForm({ kind: "add", parent })}
               onRename={(target) => setForm({ kind: "rename", node: target })}
-              onDelete={(target) => remove.mutate(target.id)}
+              onDelete={(target) => {
+                if (window.confirm(`"${target.name}" omborini o'chirishni tasdiqlaysizmi?`)) remove.mutate(target.id);
+              }}
               busy={remove.isPending}
             />
           ))}

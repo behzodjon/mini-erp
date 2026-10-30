@@ -45,6 +45,7 @@ describe("warehouse tree", () => {
   it("refuses a parent that does not exist", async () => {
     expect((await create({ name: "Yetim", parentId: "64b7f0f0f0f0f0f0f0f0f0f0" })).statusCode).toBe(404);
     expect((await create({ name: "Yetim", parentId: "not-an-id" })).statusCode).toBe(404);
+    expect((await create({ name: "Yetim", parentId: "" })).statusCode).toBe(400);
   });
 
   it("rejects a blank name", async () => {
