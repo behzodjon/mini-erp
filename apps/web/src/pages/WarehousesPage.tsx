@@ -98,7 +98,7 @@ function TreeNode({ node, ...actions }: TreeNodeProps) {
           <button className="secondary" onClick={() => actions.onRename(node)}>
             Nomini o'zgartirish
           </button>
-          <button className="secondary" disabled={actions.busy} onClick={() => actions.onDelete(node)}>
+          <button className="danger" disabled={actions.busy} onClick={() => actions.onDelete(node)}>
             O'chirish
           </button>
         </span>

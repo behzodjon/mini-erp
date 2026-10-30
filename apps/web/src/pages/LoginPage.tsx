@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../api";
+import { Icon } from "../icons";
 import { SESSION_KEY } from "../session";
 
 export function LoginPage() {
@@ -23,7 +24,11 @@ export function LoginPage() {
   return (
     <main className="login">
       <form onSubmit={submit} className="card">
+        <div className="logo">
+          <Icon name="logo" />
+        </div>
         <h1>Ichimliklar do'koni</h1>
+        <p className="subtitle">Hisobingizga kiring</p>
         <label>
           Login
           <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus required />

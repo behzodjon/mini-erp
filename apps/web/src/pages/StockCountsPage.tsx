@@ -103,7 +103,7 @@ export function StockCountsPage() {
                         Bajarish
                       </button>
                       <button
-                        className="secondary"
+                        className="danger"
                         disabled={remove.isPending}
                         onClick={() => window.confirm(`${c.number} qoralamasi o'chirilsinmi?`) && remove.mutate(c.id)}
                       >

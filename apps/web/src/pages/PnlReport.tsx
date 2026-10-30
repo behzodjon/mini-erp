@@ -39,7 +39,7 @@ export function PnlReport() {
 
 function PnlRow({ label, amount, strong }: { label: string; amount: number; strong?: boolean }) {
   return (
-    <tr>
+    <tr className={strong ? "total" : undefined}>
       <td>{strong ? <strong>{label}</strong> : label}</td>
       <td className={amount < 0 ? "num error" : "num"}>{strong ? <strong>{som.format(amount)}</strong> : som.format(amount)} so'm</td>
     </tr>
@@ -56,10 +56,12 @@ function CashAndDebtsPanel() {
       {panel.isError && <p className="error">Ma'lumotni yuklab bo'lmadi.</p>}
       {panel.data && (
         <>
-          <p>
-            Kassadagi pul:{" "}
-            <strong className={panel.data.cashBalance < 0 ? "error" : undefined}>{som.format(panel.data.cashBalance)} so'm</strong>
-          </p>
+          <div className="stats">
+            <div className="stat">
+              <div className="label">Kassadagi pul</div>
+              <div className={panel.data.cashBalance < 0 ? "value negative" : "value"}>{som.format(panel.data.cashBalance)} so'm</div>
+            </div>
+          </div>
           <DebtTable title="Menga qarzdorlar" empty="Hech kim qarzdor emas." balances={panel.data.owedToMe} />
           <DebtTable title="Men qarzdorman" empty="Hech kimga qarzim yo'q." balances={panel.data.iOwe} />
         </>

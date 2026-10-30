@@ -89,7 +89,7 @@ export function PurchasesPage() {
                         Bajarish
                       </button>
                       <button
-                        className="secondary"
+                        className="danger"
                         disabled={remove.isPending}
                         onClick={() => window.confirm(`${p.number} qoralamasi o'chirilsinmi?`) && remove.mutate(p.id)}
                       >

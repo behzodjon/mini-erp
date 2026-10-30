@@ -13,7 +13,7 @@ export function ReportsPage() {
   return (
     <section>
       <h2>Hisobotlar</h2>
-      <div className="toolbar">
+      <div className="toolbar tabs">
         <button className={report === "stock" ? "" : "secondary"} aria-pressed={report === "stock"} onClick={() => setReport("stock")}>
           Qoldiq
         </button>
@@ -36,7 +36,7 @@ function StockReport() {
   return (
     <>
       <h3>Qoldiq</h3>
-      <div className="toolbar">
+      <div className="toolbar tabs">
         <button className={view === "product" ? "" : "secondary"} aria-pressed={view === "product"} onClick={() => setView("product")}>
           Mahsulot bo'yicha
         </button>
