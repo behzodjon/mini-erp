@@ -5,3 +5,4 @@ export * from "./warehouse.js";
 export * from "./date.js";
 export * from "./purchase.js";
 export * from "./report.js";
+export * from "./sale.js";

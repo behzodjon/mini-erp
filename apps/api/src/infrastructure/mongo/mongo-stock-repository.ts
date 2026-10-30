@@ -43,6 +43,12 @@ export function makeMongoStockRepository(db: Db, session?: ClientSession): Stock
       return (await balances.countDocuments({ warehouseId, quantity: { $ne: 0 } }, { limit: 1, session })) > 0;
     },
 
+    async balancesAt(pairs) {
+      if (pairs.length === 0) return [];
+      const docs = await balances.find({ $or: pairs.map(({ productId, warehouseId }) => ({ productId, warehouseId })) }, { session }).toArray();
+      return docs.map(({ productId, warehouseId, quantity }) => ({ productId, warehouseId, quantity }));
+    },
+
     async balances() {
       const docs = await balances.find({ quantity: { $ne: 0 } }, { session }).toArray();
       return docs.map(({ productId, warehouseId, quantity }) => ({ productId, warehouseId, quantity }));

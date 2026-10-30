@@ -1,3 +1,5 @@
+import type { StockShortage } from "@erp/shared";
+
 /** Base class for errors the domain/application raise on purpose. The HTTP layer maps them to status codes. */
 export abstract class DomainError extends Error {
   abstract readonly code: string;
@@ -52,6 +54,14 @@ export class AlreadyExecutedError extends ConflictError {
   readonly code = "ALREADY_EXECUTED";
   constructor() {
     super("This document has already been executed");
+  }
+}
+
+export class InsufficientStockError extends ConflictError {
+  readonly code = "INSUFFICIENT_STOCK";
+  constructor(readonly shortages: readonly StockShortage[]) {
+    const lines = shortages.map((s) => s.line + 1).join(", ");
+    super(`Not enough stock for line ${lines}`);
   }
 }
 

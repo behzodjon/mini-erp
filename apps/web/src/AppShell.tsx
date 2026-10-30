@@ -7,6 +7,7 @@ import { CashPage } from "./pages/CashPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { PurchasesPage } from "./pages/PurchasesPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import { SalesPage } from "./pages/SalesPage";
 import { WarehousesPage } from "./pages/WarehousesPage";
 import { SESSION_KEY } from "./session";
 
@@ -25,6 +26,7 @@ const PAGES: Record<string, ReactElement> = {
   "/mahsulotlar": <ProductsPage />,
   "/omborlar": <WarehousesPage />,
   "/xaridlar": <PurchasesPage />,
+  "/savdolar": <SalesPage />,
   "/kassa": <CashPage />,
   "/hisobotlar": <ReportsPage />,
 };

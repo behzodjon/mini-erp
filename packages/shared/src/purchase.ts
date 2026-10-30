@@ -4,7 +4,7 @@ import { isoDate } from "./date.js";
 export const quantityUnits = ["piece", "block"] as const;
 export type QuantityUnit = (typeof quantityUnits)[number];
 
-const purchaseLineRequestSchema = z.strictObject({
+export const documentLineRequestSchema = z.strictObject({
   productId: z.string().min(1),
   warehouseId: z.string().min(1),
   /** The unit the quantity and the price were typed in. */
@@ -13,7 +13,9 @@ const purchaseLineRequestSchema = z.strictObject({
   /** Whole so'm per piece, or per block when `unit` is block. */
   unitPrice: z.number().int().nonnegative(),
 });
-export type PurchaseLineRequest = z.infer<typeof purchaseLineRequestSchema>;
+/** A purchase and a sale take their lines in the same shape. */
+export type DocumentLineRequest = z.infer<typeof documentLineRequestSchema>;
+export type PurchaseLineRequest = DocumentLineRequest;
 
 /** Used for both creating a draft and replacing it. */
 export const savePurchaseRequestSchema = z.strictObject({
@@ -22,7 +24,7 @@ export const savePurchaseRequestSchema = z.strictObject({
   defaultWarehouseId: z.string().min(1).nullish(),
   openingBalance: z.boolean().optional(),
   note: z.string().trim().optional(),
-  lines: z.array(purchaseLineRequestSchema).min(1),
+  lines: z.array(documentLineRequestSchema).min(1),
 });
 export type SavePurchaseRequest = z.infer<typeof savePurchaseRequestSchema>;
 

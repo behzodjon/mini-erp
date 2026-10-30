@@ -10,6 +10,7 @@ import {
   loginRequestSchema,
   renameWarehouseRequestSchema,
   savePurchaseRequestSchema,
+  saveSaleRequestSchema,
   updateProductRequestSchema,
 } from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
@@ -19,6 +20,7 @@ import type { CounterpartyUseCases } from "../application/counterparties.js";
 import type { ProductUseCases } from "../application/products.js";
 import type { PurchaseUseCases } from "../application/purchases.js";
 import type { ReportUseCases } from "../application/reports.js";
+import type { SaleUseCases } from "../application/sales.js";
 import type { WarehouseUseCases } from "../application/warehouses.js";
 import { NotAuthenticatedError } from "../domain/errors.js";
 import { registerErrorHandler } from "./error-handler.js";
@@ -30,6 +32,7 @@ export type HttpDeps = {
   products: ProductUseCases;
   warehouses: WarehouseUseCases;
   purchases: PurchaseUseCases;
+  sales: SaleUseCases;
   reports: ReportUseCases;
   cash: CashUseCases;
   counterparties: CounterpartyUseCases;
@@ -137,6 +140,26 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
   });
 
   app.post<{ Params: { id: string } }>("/api/purchases/:id/execute", async (request) => deps.purchases.execute(request.params.id));
+
+  app.get("/api/sales", async () => deps.sales.list());
+
+  app.get<{ Params: { id: string } }>("/api/sales/:id", async (request) => deps.sales.get(request.params.id));
+
+  app.post("/api/sales", async (request, reply) => {
+    const sale = await deps.sales.createDraft(saveSaleRequestSchema.parse(request.body));
+    return reply.status(201).send(sale);
+  });
+
+  app.put<{ Params: { id: string } }>("/api/sales/:id", async (request) =>
+    deps.sales.updateDraft(request.params.id, saveSaleRequestSchema.parse(request.body)),
+  );
+
+  app.delete<{ Params: { id: string } }>("/api/sales/:id", async (request, reply) => {
+    await deps.sales.deleteDraft(request.params.id);
+    return reply.status(204).send();
+  });
+
+  app.post<{ Params: { id: string } }>("/api/sales/:id/execute", async (request) => deps.sales.execute(request.params.id));
 
   app.get("/api/reports/stock", async () => deps.reports.stockByProduct());
 

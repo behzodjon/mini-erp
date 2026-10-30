@@ -2,9 +2,9 @@ import type { Purchase, SavePurchaseRequest } from "@erp/shared";
 import { nextAverageCost } from "../domain/average-cost.js";
 import { formatDocumentNumber } from "../domain/document-number.js";
 import { AlreadyExecutedError, NotFoundError } from "../domain/errors.js";
-import type { Product } from "../domain/product.js";
-import { normaliseLine, purchaseTotal } from "../domain/purchase.js";
+import { documentTotal } from "../domain/document-line.js";
 import type { StockMovement } from "../domain/stock.js";
+import { loadProducts, normaliseLines, resolveDraftLines } from "./document-lines.js";
 import type { ProductRepository } from "./ports/product-repository.js";
 import type { PurchaseContent, PurchaseRepository } from "./ports/purchase-repository.js";
 import type { SequenceCounter } from "./ports/sequence-counter.js";
@@ -25,26 +25,15 @@ export function makePurchaseUseCases(deps: {
     return purchase;
   };
 
-  /** Checks every referenced product and warehouse exists, and builds the lines the way they will be stored. */
   async function buildContent(request: SavePurchaseRequest): Promise<PurchaseContent> {
-    const defaultWarehouseId = request.defaultWarehouseId || null;
-    const warehouseIds = new Set([...request.lines.map((l) => l.warehouseId), ...(defaultWarehouseId ? [defaultWarehouseId] : [])]);
-    for (const id of warehouseIds) if (!(await deps.warehouses.findById(id))) throw new NotFoundError("Warehouse");
-
-    const products = new Map<string, Product>();
-    for (const { productId } of request.lines) {
-      const product = products.get(productId) ?? (await deps.products.findById(productId));
-      if (!product) throw new NotFoundError("Product");
-      products.set(productId, product);
-    }
-    const lines = request.lines.map((l) => normaliseLine(l, products.get(l.productId)!.piecesPerBlock));
+    const { defaultWarehouseId, lines } = await resolveDraftLines(deps, request);
     return {
       date: request.date,
       defaultWarehouseId,
       openingBalance: request.openingBalance ?? false,
       note: request.note ?? "",
       lines,
-      total: purchaseTotal(lines),
+      total: documentTotal(lines),
     };
   }
 
@@ -82,16 +71,11 @@ export function makePurchaseUseCases(deps: {
         const purchase = orNotFound(await tx.purchases.findById(id));
         if (purchase.status === "executed") throw new AlreadyExecutedError();
 
-        const products = new Map<string, Product>();
-        for (const { productId } of purchase.lines) {
-          const product = await tx.products.findById(productId);
-          if (!product) throw new NotFoundError("Product");
-          products.set(productId, product);
-        }
+        const products = await loadProducts(tx.products, purchase.lines);
 
         // Pieces per block may have been edited since the draft was saved, so the lines are normalised again.
-        const lines = purchase.lines.map((l) => normaliseLine(l, products.get(l.productId)!.piecesPerBlock));
-        const total = purchaseTotal(lines);
+        const lines = normaliseLines(purchase.lines, products);
+        const total = documentTotal(lines);
         const executedAt = new Date();
 
         const executed = await tx.purchases.markExecuted(id, lines, total, executedAt);

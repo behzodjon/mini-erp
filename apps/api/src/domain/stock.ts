@@ -6,7 +6,7 @@ export type StockMovement = {
   quantity: number;
   /** So'm per piece. */
   unitCost: number;
-  source: { type: "purchase"; id: string; line: number };
+  source: { type: "purchase" | "sale"; id: string; line: number };
   executedAt: Date;
 };
 

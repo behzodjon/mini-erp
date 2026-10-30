@@ -10,7 +10,9 @@ import type {
   LoginRequest,
   Product,
   Purchase,
+  Sale,
   SavePurchaseRequest,
+  SaveSaleRequest,
   StockByProductRow,
   UpdateProductRequest,
   Warehouse,
@@ -23,6 +25,8 @@ export class ApiError extends Error {
     message: string,
     /** The API's machine-readable error code, when the response body carried one. */
     readonly code?: string,
+    /** The parsed error body, for errors that carry more than a code (e.g. stock shortages). */
+    readonly body?: unknown,
   ) {
     super(message);
   }
@@ -37,7 +41,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   });
   if (!res.ok) {
     const error = (await res.json().catch(() => null)) as { code?: string } | null;
-    throw new ApiError(res.status, res.statusText, error?.code);
+    throw new ApiError(res.status, res.statusText, error?.code, error);
   }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
@@ -76,6 +80,12 @@ export const api = {
   updatePurchase: (id: string, body: SavePurchaseRequest) => request<Purchase>("PUT", `/api/purchases/${id}`, body),
   deletePurchase: (id: string) => request<void>("DELETE", `/api/purchases/${id}`),
   executePurchase: (id: string) => request<Purchase>("POST", `/api/purchases/${id}/execute`),
+
+  listSales: () => request<Sale[]>("GET", "/api/sales"),
+  createSale: (body: SaveSaleRequest) => request<Sale>("POST", "/api/sales", body),
+  updateSale: (id: string, body: SaveSaleRequest) => request<Sale>("PUT", `/api/sales/${id}`, body),
+  deleteSale: (id: string) => request<void>("DELETE", `/api/sales/${id}`),
+  executeSale: (id: string) => request<Sale>("POST", `/api/sales/${id}/execute`),
 
   stockByProduct: () => request<StockByProductRow[]>("GET", "/api/reports/stock"),
 
