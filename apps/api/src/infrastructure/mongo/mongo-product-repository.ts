@@ -41,7 +41,8 @@ export function makeMongoProductRepository(db: Db, session?: ClientSession): Pro
     update: (id, changes) => updateOne(id, changes),
 
     async setStock(id, stock) {
-      await products.updateOne({ _id: new ObjectId(id) }, { $set: stock }, { session });
+      const filter = idFilter(id);
+      if (filter) await products.updateOne(filter, { $set: stock }, { session });
     },
 
     setArchived: (id, archived) => updateOne(id, { archived }),

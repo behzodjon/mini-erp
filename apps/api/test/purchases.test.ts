@@ -204,6 +204,18 @@ describe("purchases and stock by product", () => {
       expect((await product(p.id)).onHandQuantity).toBe(10);
     });
 
+    it("executes different purchases of the same product concurrently without losing either", async () => {
+      const p = await makeProduct("Cola shared");
+      const wh = await makeWarehouse("Shared ombor");
+      const drafts = await Promise.all([1, 2, 3].map(() => draft([line(p.id, wh.id, 10, 1_000)])));
+
+      const results = await Promise.all(drafts.map((d) => execute(d.id)));
+      expect(results.map((r) => r.statusCode)).toEqual([200, 200, 200]);
+      expect(await product(p.id)).toMatchObject({ onHandQuantity: 30, averageCost: 1_000 });
+      const row = (await stockReport()).find((r) => r.productId === p.id)!;
+      expect(row.locations[0].pieces).toBe(30);
+    });
+
     it("refuses to edit or delete an executed purchase", async () => {
       const p = await makeProduct("Cola frozen");
       const wh = await makeWarehouse("Frozen ombor");
