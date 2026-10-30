@@ -16,6 +16,7 @@ import type {
   SaveStockCountRequest,
   StockAtNodeRow,
   StockByProductRow,
+  StockByWarehouseNode,
   StockCount,
   UpdateProductRequest,
   Warehouse,
@@ -98,6 +99,7 @@ export const api = {
 
   stockAtNode: (warehouseId: string) => request<StockAtNodeRow[]>("GET", `/api/reports/stock-at/${warehouseId}`),
   stockByProduct: () => request<StockByProductRow[]>("GET", "/api/reports/stock"),
+  stockByWarehouse: () => request<StockByWarehouseNode[]>("GET", "/api/reports/stock-by-warehouse"),
 
   warehouseTree: () => request<WarehouseNode[]>("GET", "/api/warehouses"),
   createWarehouse: (body: CreateWarehouseRequest) => request<Warehouse>("POST", "/api/warehouses", body),

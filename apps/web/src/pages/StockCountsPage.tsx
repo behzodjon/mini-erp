@@ -28,6 +28,7 @@ export function StockCountsPage() {
     // Executing moves stock, so everything derived from it is stale too.
     void queryClient.invalidateQueries({ queryKey: ["products"] });
     void queryClient.invalidateQueries({ queryKey: ["stock-report"] });
+    void queryClient.invalidateQueries({ queryKey: ["stock-by-warehouse"] });
     void queryClient.invalidateQueries({ queryKey: ["stock-at"] });
   };
 

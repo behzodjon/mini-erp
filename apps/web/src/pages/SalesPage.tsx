@@ -52,6 +52,7 @@ export function SalesPage() {
     // Executing moves stock and cash, so everything derived from them is stale too.
     void queryClient.invalidateQueries({ queryKey: ["products"] });
     void queryClient.invalidateQueries({ queryKey: ["stock-report"] });
+    void queryClient.invalidateQueries({ queryKey: ["stock-by-warehouse"] });
     void queryClient.invalidateQueries({ queryKey: ["cash-entries"] });
   };
 

@@ -186,6 +186,8 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
 
   app.get("/api/reports/stock", async () => deps.reports.stockByProduct());
 
+  app.get("/api/reports/stock-by-warehouse", async () => deps.reports.stockByWarehouse());
+
   app.get<{ Params: { warehouseId: string } }>("/api/reports/stock-at/:warehouseId", async (request) =>
     deps.reports.stockAtNode(request.params.warehouseId),
   );
