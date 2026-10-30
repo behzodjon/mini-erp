@@ -2,6 +2,9 @@ import type { WarehouseNode } from "@erp/shared";
 
 export const som = new Intl.NumberFormat("uz-UZ");
 
+/** Today in the shop's calendar (Tashkent), whatever the browser's time zone is. */
+export const shopToday = (): string => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tashkent" }).format(new Date());
+
 /** "2 blok + 6 dona", leaving out the part that is zero. */
 export function formatBlocks(q: { blocks: number; remainderPieces: number }): string {
   const parts = [];

@@ -3,14 +3,34 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../api";
 import { formatBlocks, som } from "../lib";
+import { SalesReport } from "./SalesReport";
 
-type StockView = "product" | "warehouse";
+type Report = "stock" | "sales";
 
 export function ReportsPage() {
-  const [view, setView] = useState<StockView>("product");
+  const [report, setReport] = useState<Report>("stock");
   return (
     <section>
       <h2>Hisobotlar</h2>
+      <div className="toolbar">
+        <button className={report === "stock" ? "" : "secondary"} aria-pressed={report === "stock"} onClick={() => setReport("stock")}>
+          Qoldiq
+        </button>
+        <button className={report === "sales" ? "" : "secondary"} aria-pressed={report === "sales"} onClick={() => setReport("sales")}>
+          Savdo
+        </button>
+      </div>
+      {report === "stock" ? <StockReport /> : <SalesReport />}
+    </section>
+  );
+}
+
+type StockView = "product" | "warehouse";
+
+function StockReport() {
+  const [view, setView] = useState<StockView>("product");
+  return (
+    <>
       <h3>Qoldiq</h3>
       <div className="toolbar">
         <button className={view === "product" ? "" : "secondary"} aria-pressed={view === "product"} onClick={() => setView("product")}>
@@ -21,7 +41,7 @@ export function ReportsPage() {
         </button>
       </div>
       {view === "product" ? <StockByProduct /> : <StockByWarehouse />}
-    </section>
+    </>
   );
 }
 

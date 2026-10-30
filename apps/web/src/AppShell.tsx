@@ -73,6 +73,7 @@ export function AppShell({ user }: { user: CurrentUser }) {
           {NAV.map((item) => (
             <Route key={item.to} path={item.to} element={PAGES[item.to] ?? <Placeholder title={item.label} />} />
           ))}
+          <Route path="/savdolar/:id" element={<SalesPage />} />
           <Route path="*" element={<Placeholder title="Sahifa topilmadi" />} />
         </Routes>
       </main>

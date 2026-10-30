@@ -1,6 +1,7 @@
 import type { Product, QuantityUnit, Sale, SaveSaleRequest, StockByProductRow, StockShortage } from "@erp/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../api";
 import { flattenWarehouses, som } from "../lib";
 
@@ -44,11 +45,21 @@ function describeFailure(error: unknown): string {
 
 export function SalesPage() {
   const queryClient = useQueryClient();
-  const [editing, setEditing] = useState<Editing | null>(null);
+  const navigate = useNavigate();
+  const [chosen, setChosen] = useState<Editing | null>(null);
+  // /savdolar/:id opens that sale (the sales report links here).
+  const { id: routedId } = useParams();
+  const routed = useQuery({ queryKey: ["sale", routedId], queryFn: () => api.getSale(routedId!), enabled: !!routedId });
+  const editing: Editing | null = chosen ?? (routed.data ? { kind: "sale", sale: routed.data } : null);
+  const closeForm = () => {
+    setChosen(null);
+    if (routedId) navigate("/savdolar");
+  };
   const sales = useQuery({ queryKey: SALES_KEY, queryFn: api.listSales });
 
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: SALES_KEY });
+    void queryClient.invalidateQueries({ queryKey: ["sales-report"] });
     // Executing moves stock and cash, so everything derived from them is stale too.
     void queryClient.invalidateQueries({ queryKey: ["products"] });
     void queryClient.invalidateQueries({ queryKey: ["stock-report"] });
@@ -69,7 +80,7 @@ export function SalesPage() {
     <section>
       <h2>Savdolar</h2>
       <div className="toolbar">
-        <button onClick={() => setEditing({ kind: "new" })}>Yangi savdo</button>
+        <button onClick={() => setChosen({ kind: "new" })}>Yangi savdo</button>
       </div>
 
       {editing && (
@@ -77,10 +88,10 @@ export function SalesPage() {
           key={editing.kind === "sale" ? editing.sale.id : "new"}
           sale={editing.kind === "sale" ? editing.sale : null}
           onDone={() => {
-            setEditing(null);
+            closeForm();
             refresh();
           }}
-          onCancel={() => setEditing(null)}
+          onCancel={closeForm}
         />
       )}
 
@@ -119,7 +130,7 @@ export function SalesPage() {
                     className="secondary"
                     onClick={() => {
                       execute.reset();
-                      setEditing({ kind: "sale", sale: s });
+                      setChosen({ kind: "sale", sale: s });
                     }}
                   >
                     {s.status === "draft" ? "Tahrirlash" : "Ko'rish"}

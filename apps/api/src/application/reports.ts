@@ -1,7 +1,19 @@
-import type { StockAtNodeRow, StockByProductRow, StockByWarehouseNode, StockProductLine, StockQuantity } from "@erp/shared";
+import type {
+  DateRangeQuery,
+  SalesByProductRow,
+  SalesFigures,
+  SalesReport,
+  StockAtNodeRow,
+  StockByProductRow,
+  StockByWarehouseNode,
+  StockProductLine,
+  StockQuantity,
+} from "@erp/shared";
 import { splitIntoBlocks } from "../domain/quantity.js";
+import { shopDaysRange } from "../domain/shop-calendar.js";
 import type { Warehouse } from "../domain/warehouse.js";
 import type { ProductRepository } from "./ports/product-repository.js";
+import type { SaleRepository } from "./ports/sale-repository.js";
 import type { StockRepository } from "./ports/stock-repository.js";
 import type { WarehouseRepository } from "./ports/warehouse-repository.js";
 
@@ -23,7 +35,9 @@ const productLine = (p: { id: string; name: string; piecesPerBlock: number; aver
 /** Pieces per product, per warehouse node. */
 type Totals = Map<string, Map<string, number>>;
 
-export function makeReportUseCases(deps: { products: ProductRepository; warehouses: WarehouseRepository; stock: StockRepository }) {
+const withProfit = (revenue: number, costOfGoodsSold: number): SalesFigures => ({ revenue, costOfGoodsSold, grossProfit: revenue - costOfGoodsSold });
+
+export function makeReportUseCases(deps: { products: ProductRepository; sales: SaleRepository; warehouses: WarehouseRepository; stock: StockRepository }) {
   return {
     /** Every active product, plus archived ones that still hold stock, with where the stock sits. */
     async stockByProduct(): Promise<StockByProductRow[]> {
@@ -95,6 +109,45 @@ export function makeReportUseCases(deps: { products: ProductRepository; warehous
           };
         });
       return branch(null);
+    },
+
+    /**
+     * Executed sales whose execution falls on a shop day in the range, both ends included.
+     * Cost of goods sold is the average cost each line stored when it was executed.
+     */
+    async sales({ from, to }: DateRangeQuery): Promise<SalesReport> {
+      const { start, end } = shopDaysRange(from, to);
+      const [sales, products] = await Promise.all([
+        deps.sales.listExecuted({ from: start, until: end }),
+        deps.products.list({ includeArchived: true }),
+      ]);
+      const productById = new Map(products.map((p) => [p.id, p]));
+
+      const perProduct = new Map<string, { pieces: number; revenue: number; cost: number }>();
+      const entries = sales.map((sale) => {
+        let cost = 0;
+        for (const l of sale.lines) {
+          const lineCost = l.pieces * l.costPerPiece!;
+          cost += lineCost;
+          const row = perProduct.get(l.productId) ?? { pieces: 0, revenue: 0, cost: 0 };
+          perProduct.set(l.productId, { pieces: row.pieces + l.pieces, revenue: row.revenue + l.lineTotal, cost: row.cost + lineCost });
+        }
+        return { id: sale.id, number: sale.number, date: sale.date, executedAt: sale.executedAt!, ...withProfit(sale.total, cost) };
+      });
+
+      const rows: SalesByProductRow[] = [...perProduct]
+        .map(([productId, row]) => {
+          const p = productById.get(productId)!;
+          return { productId, productName: p.name, piecesPerBlock: p.piecesPerBlock, ...quantity(row.pieces, p.piecesPerBlock), ...withProfit(row.revenue, row.cost) };
+        })
+        .sort((a, b) => a.productName.localeCompare(b.productName));
+
+      const sum = (pick: (e: SalesFigures) => number) => entries.reduce((total, e) => total + pick(e), 0);
+      return {
+        summary: { count: entries.length, ...withProfit(sum((e) => e.revenue), sum((e) => e.costOfGoodsSold)) },
+        products: rows,
+        sales: entries,
+      };
     },
 
     /** What one node holds of each product, so a count can show it next to the counted quantity. */

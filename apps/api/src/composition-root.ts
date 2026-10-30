@@ -57,8 +57,9 @@ export async function createApp(config: AppConfig): Promise<App> {
     sequence,
     unitOfWork: executionUnitOfWork,
   });
+  const saleRepository = makeMongoSaleRepository(db);
   const sales = makeSaleUseCases({
-    sales: makeMongoSaleRepository(db),
+    sales: saleRepository,
     products: productRepository,
     warehouses: warehouseRepository,
     sequence,
@@ -71,7 +72,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     sequence,
     unitOfWork: executionUnitOfWork,
   });
-  const reports = makeReportUseCases({ products: productRepository, warehouses: warehouseRepository, stock: stockRepository });
+  const reports = makeReportUseCases({ products: productRepository, sales: saleRepository, warehouses: warehouseRepository, stock: stockRepository });
 
   const counterpartyRepository = makeMongoCounterpartyRepository(db);
   const counterparties = makeCounterpartyUseCases({ counterparties: counterpartyRepository });

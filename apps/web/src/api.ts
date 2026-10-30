@@ -13,6 +13,7 @@ import type {
   Sale,
   SavePurchaseRequest,
   SaveSaleRequest,
+  SalesReport,
   SaveStockCountRequest,
   StockAtNodeRow,
   StockByProductRow,
@@ -86,6 +87,7 @@ export const api = {
   executePurchase: (id: string) => request<Purchase>("POST", `/api/purchases/${id}/execute`),
 
   listSales: () => request<Sale[]>("GET", "/api/sales"),
+  getSale: (id: string) => request<Sale>("GET", `/api/sales/${id}`),
   createSale: (body: SaveSaleRequest) => request<Sale>("POST", "/api/sales", body),
   updateSale: (id: string, body: SaveSaleRequest) => request<Sale>("PUT", `/api/sales/${id}`, body),
   deleteSale: (id: string) => request<void>("DELETE", `/api/sales/${id}`),
@@ -98,6 +100,7 @@ export const api = {
   executeStockCount: (id: string) => request<StockCount>("POST", `/api/stock-counts/${id}/execute`),
 
   stockAtNode: (warehouseId: string) => request<StockAtNodeRow[]>("GET", `/api/reports/stock-at/${warehouseId}`),
+  salesReport: (from: string, to: string) => request<SalesReport>("GET", `/api/reports/sales?from=${from}&to=${to}`),
   stockByProduct: () => request<StockByProductRow[]>("GET", "/api/reports/stock"),
   stockByWarehouse: () => request<StockByWarehouseNode[]>("GET", "/api/reports/stock-by-warehouse"),
 

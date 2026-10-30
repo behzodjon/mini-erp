@@ -1,3 +1,6 @@
+import { z } from "zod";
+import { isoDate } from "./date.js";
+
 export type StockQuantity = {
   pieces: number;
   blocks: number;
@@ -35,4 +38,38 @@ export type StockByWarehouseNode = {
   totalPieces: number;
   totalValue: number;
   children: StockByWarehouseNode[];
+};
+
+/** A date range of whole shop days, both ends included. */
+export const dateRangeQuerySchema = z
+  .object({ from: isoDate, to: isoDate })
+  .refine((range) => range.from <= range.to, { message: "from must not be after to", path: ["to"] });
+export type DateRangeQuery = z.infer<typeof dateRangeQuerySchema>;
+
+/** Revenue, cost of goods sold and what is left, in so'm. */
+export type SalesFigures = { revenue: number; costOfGoodsSold: number; grossProfit: number };
+
+export type SalesSummary = SalesFigures & { count: number };
+
+/** One product's sales in the range. */
+export type SalesByProductRow = StockQuantity &
+  SalesFigures & {
+    productId: string;
+    productName: string;
+    piecesPerBlock: number;
+  };
+
+/** An executed sale in the range, with the figures the list shows. */
+export type SalesReportEntry = SalesFigures & {
+  id: string;
+  number: string;
+  date: string;
+  executedAt: string;
+};
+
+export type SalesReport = {
+  summary: SalesSummary;
+  products: SalesByProductRow[];
+  /** Oldest first. */
+  sales: SalesReportEntry[];
 };

@@ -8,6 +8,8 @@ export interface SaleRepository {
   findById(id: string): Promise<Sale | null>;
   /** Newest first. */
   list(): Promise<Sale[]>;
+  /** Executed sales whose execution time is in [from, until), oldest first. */
+  listExecuted(range: { from: Date; until: Date }): Promise<Sale[]>;
   /** Resolves null when the sale does not exist or is no longer a draft. */
   replaceDraft(id: string, content: SaleContent): Promise<Sale | null>;
   /** False when the sale does not exist or is no longer a draft. */

@@ -32,6 +32,11 @@ export function makeMongoSaleRepository(db: Db, session?: ClientSession): SaleRe
       return (await sales.find({}, { session }).sort({ _id: -1 }).toArray()).map(toSale);
     },
 
+    async listExecuted({ from, until }) {
+      const docs = await sales.find({ status: "executed", executedAt: { $gte: from, $lt: until } }, { session }).sort({ executedAt: 1 }).toArray();
+      return docs.map(toSale);
+    },
+
     async replaceDraft(id, content) {
       const filter = idFilter(id);
       const doc = filter && (await sales.findOneAndUpdate({ ...filter, status: "draft" }, { $set: content }, { returnDocument: "after", session }));
