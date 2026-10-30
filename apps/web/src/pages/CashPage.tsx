@@ -122,6 +122,9 @@ function CashEntryForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
       if (creatingCounterparty) {
         const created = await api.createCounterparty({ name: newName, phone: newPhone });
         void queryClient.invalidateQueries({ queryKey: COUNTERPARTIES_KEY });
+        // If the entry is refused below, a retry must pick this counterparty instead of creating another.
+        setCounterpartyId(created.id);
+        setCreatingCounterparty(false);
         chosenId = created.id;
       }
       return api.createCashEntry({
