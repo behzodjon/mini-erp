@@ -10,6 +10,7 @@
     "test": "pnpm -r test",
     "hash-password": "pnpm --filter @erp/api hash-password",
     "seed": "pnpm --filter @erp/api seed",
+    "seed:prod": "pnpm --filter @erp/api seed:prod",
     "build": "pnpm --filter @erp/web build",
     "start": "pnpm --filter @erp/api start:prod"
   },

@@ -19,6 +19,7 @@ cp .env.example .env          # then set OWNER_PASSWORD_HASH (see below) and SES
 pnpm hash-password <password> # prints a bcrypt hash for OWNER_PASSWORD_HASH
 pnpm db:up                    # MongoDB as a single-node replica set (needed for transactions)
 pnpm seed                     # fills an empty database with the demo shop (refuses a non-empty one; add -- --force to override)
+pnpm seed:prod                # same, but reads .env.production (a copy of .env with the Atlas MONGODB_URI); gitignored
 pnpm dev                      # API on :3000, web on http://localhost:5173
 ```
 
