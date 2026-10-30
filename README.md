@@ -18,6 +18,7 @@ pnpm install
 cp .env.example .env          # then set OWNER_PASSWORD_HASH (see below) and SESSION_SECRET
 pnpm hash-password <password> # prints a bcrypt hash for OWNER_PASSWORD_HASH
 pnpm db:up                    # MongoDB as a single-node replica set (needed for transactions)
+pnpm seed                     # fills an empty database with the demo shop (refuses a non-empty one; add -- --force to override)
 pnpm dev                      # API on :3000, web on http://localhost:5173
 ```
 

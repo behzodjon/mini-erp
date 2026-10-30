@@ -29,7 +29,7 @@ import { buildHttpApp } from "./http/app.js";
 export type App = FastifyInstance;
 
 /** The only place where concrete adapters are chosen and wired to use cases. */
-export async function createApp(config: AppConfig): Promise<App> {
+export async function composeUseCases(config: AppConfig) {
   const mongo = new MongoClient(config.mongodbUri);
   await mongo.connect();
 
@@ -92,9 +92,15 @@ export async function createApp(config: AppConfig): Promise<App> {
     sequence,
   });
 
-  const app = await buildHttpApp({ login, checkHealth, products, warehouses, purchases, sales, stockCounts, reports, cash, counterparties, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
+  return { login, checkHealth, products, warehouses, purchases, sales, stockCounts, reports, cash, counterparties, close: () => mongo.close() };
+}
+export type UseCases = Awaited<ReturnType<typeof composeUseCases>>;
+
+export async function createApp(config: AppConfig): Promise<App> {
+  const { close, ...useCases } = await composeUseCases(config);
+  const app = await buildHttpApp({ ...useCases, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
   app.addHook("onClose", async () => {
-    await mongo.close();
+    await close();
   });
   return app;
 }

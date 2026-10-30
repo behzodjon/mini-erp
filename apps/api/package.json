@@ -6,6 +6,7 @@
     "dev": "tsx watch --env-file=../../.env src/main.ts",
     "start": "tsx --env-file=../../.env src/main.ts",
     "hash-password": "tsx scripts/hash-password.ts",
+    "seed": "tsx --env-file=../../.env scripts/seed.ts",
     "typecheck": "tsc -p .",
     "test": "vitest run",
     "start:prod": "tsx src/main.ts"
