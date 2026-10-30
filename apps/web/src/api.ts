@@ -1,9 +1,12 @@
 import type {
   CreateProductRequest,
+  CreateWarehouseRequest,
   CurrentUser,
   LoginRequest,
   Product,
   UpdateProductRequest,
+  Warehouse,
+  WarehouseNode,
 } from "@erp/shared";
 
 export class ApiError extends Error {
@@ -49,4 +52,9 @@ export const api = {
   updateProduct: (id: string, body: UpdateProductRequest) => request<Product>("PATCH", `/api/products/${id}`, body),
   setProductArchived: (id: string, archived: boolean) =>
     request<Product>("POST", `/api/products/${id}/${archived ? "archive" : "unarchive"}`),
+
+  warehouseTree: () => request<WarehouseNode[]>("GET", "/api/warehouses"),
+  createWarehouse: (body: CreateWarehouseRequest) => request<Warehouse>("POST", "/api/warehouses", body),
+  renameWarehouse: (id: string, name: string) => request<Warehouse>("PATCH", `/api/warehouses/${id}`, { name }),
+  deleteWarehouse: (id: string) => request<void>("DELETE", `/api/warehouses/${id}`),
 };

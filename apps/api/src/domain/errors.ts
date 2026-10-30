@@ -17,6 +17,13 @@ export class NotAuthenticatedError extends DomainError {
   }
 }
 
+export class WarehouseHasChildrenError extends DomainError {
+  readonly code = "WAREHOUSE_HAS_CHILDREN";
+  constructor() {
+    super("Warehouse has sub-warehouses and cannot be deleted");
+  }
+}
+
 export class NotFoundError extends DomainError {
   readonly code = "NOT_FOUND";
   constructor(what: string) {

@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { api } from "./api";
 import { ProductsPage } from "./pages/ProductsPage";
+import { WarehousesPage } from "./pages/WarehousesPage";
 import { SESSION_KEY } from "./session";
 
 const NAV = [
@@ -19,6 +20,7 @@ const NAV = [
 /** Sections that have a real page; the rest show a placeholder until their ticket lands. */
 const PAGES: Record<string, ReactElement> = {
   "/mahsulotlar": <ProductsPage />,
+  "/omborlar": <WarehousesPage />,
 };
 
 function Placeholder({ title }: { title: string }) {

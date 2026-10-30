@@ -3,13 +3,16 @@ import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
 import {
   createProductRequestSchema,
+  createWarehouseRequestSchema,
   listProductsQuerySchema,
   loginRequestSchema,
+  renameWarehouseRequestSchema,
   updateProductRequestSchema,
 } from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
 import type { makeLogin } from "../application/login.js";
 import type { ProductUseCases } from "../application/products.js";
+import type { WarehouseUseCases } from "../application/warehouses.js";
 import { NotAuthenticatedError } from "../domain/errors.js";
 import { registerErrorHandler } from "./error-handler.js";
 import { endSession, readSession, startSession } from "./session.js";
@@ -18,6 +21,7 @@ export type HttpDeps = {
   login: ReturnType<typeof makeLogin>;
   checkHealth: ReturnType<typeof makeCheckHealth>;
   products: ProductUseCases;
+  warehouses: WarehouseUseCases;
   sessionSecret: string;
   secureCookies: boolean;
   webRoot?: string;
@@ -72,6 +76,22 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
   app.post<{ Params: { id: string } }>("/api/products/:id/unarchive", async (request) =>
     deps.products.setArchived(request.params.id, false),
   );
+
+  app.get("/api/warehouses", async () => deps.warehouses.tree());
+
+  app.post("/api/warehouses", async (request, reply) => {
+    const warehouse = await deps.warehouses.create(createWarehouseRequestSchema.parse(request.body));
+    return reply.status(201).send(warehouse);
+  });
+
+  app.patch<{ Params: { id: string } }>("/api/warehouses/:id", async (request) =>
+    deps.warehouses.rename(request.params.id, renameWarehouseRequestSchema.parse(request.body).name),
+  );
+
+  app.delete<{ Params: { id: string } }>("/api/warehouses/:id", async (request, reply) => {
+    await deps.warehouses.remove(request.params.id);
+    return reply.status(204).send();
+  });
 
   app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());
 
