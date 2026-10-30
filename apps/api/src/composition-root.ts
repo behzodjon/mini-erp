@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { MongoClient } from "mongodb";
 import { makePurchaseUseCases } from "./application/purchases.js";
 import { makeSaleUseCases } from "./application/sales.js";
+import { makeStockCountUseCases } from "./application/stock-counts.js";
 import { makeReportUseCases } from "./application/reports.js";
 import { makeCashUseCases } from "./application/cash.js";
 import { makeCheckHealth } from "./application/check-health.js";
@@ -19,6 +20,7 @@ import { makeMongoSequenceCounter } from "./infrastructure/mongo/mongo-sequence-
 import { makeMongoWarehouseRepository } from "./infrastructure/mongo/mongo-warehouse-repository.js";
 import { makeMongoPurchaseRepository } from "./infrastructure/mongo/mongo-purchase-repository.js";
 import { makeMongoSaleRepository } from "./infrastructure/mongo/mongo-sale-repository.js";
+import { makeMongoStockCountRepository } from "./infrastructure/mongo/mongo-stock-count-repository.js";
 import { makeMongoExecutionUnitOfWork } from "./infrastructure/mongo/mongo-execution-unit-of-work.js";
 import { makeMongoStockRepository, ensureStockIndexes } from "./infrastructure/mongo/mongo-stock-repository.js";
 import { makeMongoUnitOfWork } from "./infrastructure/mongo/mongo-unit-of-work.js";
@@ -62,6 +64,13 @@ export async function createApp(config: AppConfig): Promise<App> {
     sequence,
     unitOfWork: executionUnitOfWork,
   });
+  const stockCounts = makeStockCountUseCases({
+    stockCounts: makeMongoStockCountRepository(db),
+    products: productRepository,
+    warehouses: warehouseRepository,
+    sequence,
+    unitOfWork: executionUnitOfWork,
+  });
   const reports = makeReportUseCases({ products: productRepository, warehouses: warehouseRepository, stock: stockRepository });
 
   const counterpartyRepository = makeMongoCounterpartyRepository(db);
@@ -72,7 +81,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     sequence,
   });
 
-  const app = await buildHttpApp({ login, checkHealth, products, warehouses, purchases, sales, reports, cash, counterparties, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
+  const app = await buildHttpApp({ login, checkHealth, products, warehouses, purchases, sales, stockCounts, reports, cash, counterparties, sessionSecret: config.sessionSecret, secureCookies: config.secureCookies, webRoot: config.webRoot });
   app.addHook("onClose", async () => {
     await mongo.close();
   });

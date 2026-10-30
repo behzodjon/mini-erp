@@ -6,3 +6,4 @@ export * from "./date.js";
 export * from "./purchase.js";
 export * from "./report.js";
 export * from "./sale.js";
+export * from "./stock-count.js";

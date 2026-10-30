@@ -16,3 +16,6 @@ export type StockByProductRow = StockQuantity & {
   value: number;
   locations: StockLocation[];
 };
+
+/** What one warehouse node holds of one product. Products with nothing there are left out. */
+export type StockAtNodeRow = { productId: string; pieces: number };

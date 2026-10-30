@@ -1,4 +1,4 @@
-import type { StockByProductRow, StockQuantity } from "@erp/shared";
+import type { StockAtNodeRow, StockByProductRow, StockQuantity } from "@erp/shared";
 import { splitIntoBlocks } from "../domain/quantity.js";
 import type { ProductRepository } from "./ports/product-repository.js";
 import type { StockRepository } from "./ports/stock-repository.js";
@@ -38,6 +38,12 @@ export function makeReportUseCases(deps: { products: ProductRepository; warehous
             }))
             .sort((a, b) => a.warehouseName.localeCompare(b.warehouseName)),
         }));
+    },
+
+    /** What one node holds of each product, so a count can show it next to the counted quantity. */
+    async stockAtNode(warehouseId: string): Promise<StockAtNodeRow[]> {
+      const balances = await deps.stock.balances();
+      return balances.filter((b) => b.warehouseId === warehouseId).map((b) => ({ productId: b.productId, pieces: b.quantity }));
     },
   };
 }

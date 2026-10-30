@@ -11,6 +11,7 @@ import {
   renameWarehouseRequestSchema,
   savePurchaseRequestSchema,
   saveSaleRequestSchema,
+  saveStockCountRequestSchema,
   updateProductRequestSchema,
 } from "@erp/shared";
 import type { makeCheckHealth } from "../application/check-health.js";
@@ -21,6 +22,7 @@ import type { ProductUseCases } from "../application/products.js";
 import type { PurchaseUseCases } from "../application/purchases.js";
 import type { ReportUseCases } from "../application/reports.js";
 import type { SaleUseCases } from "../application/sales.js";
+import type { StockCountUseCases } from "../application/stock-counts.js";
 import type { WarehouseUseCases } from "../application/warehouses.js";
 import { NotAuthenticatedError } from "../domain/errors.js";
 import { registerErrorHandler } from "./error-handler.js";
@@ -33,6 +35,7 @@ export type HttpDeps = {
   warehouses: WarehouseUseCases;
   purchases: PurchaseUseCases;
   sales: SaleUseCases;
+  stockCounts: StockCountUseCases;
   reports: ReportUseCases;
   cash: CashUseCases;
   counterparties: CounterpartyUseCases;
@@ -161,7 +164,31 @@ export async function buildHttpApp(deps: HttpDeps): Promise<FastifyInstance> {
 
   app.post<{ Params: { id: string } }>("/api/sales/:id/execute", async (request) => deps.sales.execute(request.params.id));
 
+  app.get("/api/stock-counts", async () => deps.stockCounts.list());
+
+  app.get<{ Params: { id: string } }>("/api/stock-counts/:id", async (request) => deps.stockCounts.get(request.params.id));
+
+  app.post("/api/stock-counts", async (request, reply) => {
+    const count = await deps.stockCounts.createDraft(saveStockCountRequestSchema.parse(request.body));
+    return reply.status(201).send(count);
+  });
+
+  app.put<{ Params: { id: string } }>("/api/stock-counts/:id", async (request) =>
+    deps.stockCounts.updateDraft(request.params.id, saveStockCountRequestSchema.parse(request.body)),
+  );
+
+  app.delete<{ Params: { id: string } }>("/api/stock-counts/:id", async (request, reply) => {
+    await deps.stockCounts.deleteDraft(request.params.id);
+    return reply.status(204).send();
+  });
+
+  app.post<{ Params: { id: string } }>("/api/stock-counts/:id/execute", async (request) => deps.stockCounts.execute(request.params.id));
+
   app.get("/api/reports/stock", async () => deps.reports.stockByProduct());
+
+  app.get<{ Params: { warehouseId: string } }>("/api/reports/stock-at/:warehouseId", async (request) =>
+    deps.reports.stockAtNode(request.params.warehouseId),
+  );
 
   app.get("/api/health", { config: { public: true } }, async () => deps.checkHealth());
 

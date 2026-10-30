@@ -13,7 +13,10 @@ import type {
   Sale,
   SavePurchaseRequest,
   SaveSaleRequest,
+  SaveStockCountRequest,
+  StockAtNodeRow,
   StockByProductRow,
+  StockCount,
   UpdateProductRequest,
   Warehouse,
   WarehouseNode,
@@ -87,6 +90,13 @@ export const api = {
   deleteSale: (id: string) => request<void>("DELETE", `/api/sales/${id}`),
   executeSale: (id: string) => request<Sale>("POST", `/api/sales/${id}/execute`),
 
+  listStockCounts: () => request<StockCount[]>("GET", "/api/stock-counts"),
+  createStockCount: (body: SaveStockCountRequest) => request<StockCount>("POST", "/api/stock-counts", body),
+  updateStockCount: (id: string, body: SaveStockCountRequest) => request<StockCount>("PUT", `/api/stock-counts/${id}`, body),
+  deleteStockCount: (id: string) => request<void>("DELETE", `/api/stock-counts/${id}`),
+  executeStockCount: (id: string) => request<StockCount>("POST", `/api/stock-counts/${id}/execute`),
+
+  stockAtNode: (warehouseId: string) => request<StockAtNodeRow[]>("GET", `/api/reports/stock-at/${warehouseId}`),
   stockByProduct: () => request<StockByProductRow[]>("GET", "/api/reports/stock"),
 
   warehouseTree: () => request<WarehouseNode[]>("GET", "/api/warehouses"),
