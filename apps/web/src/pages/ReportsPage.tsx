@@ -58,7 +58,7 @@ function StockByProduct() {
           </thead>
           <tbody>
             {report.data.map((row) => (
-              <StockRows key={row.productId} row={row} expanded={open.has(row.productId)} onToggle={() => toggle(row.productId)} />
+              <StockRows key={row.productId} row={row} open={open} onToggle={toggle} />
             ))}
             {report.data.length === 0 && (
               <tr>
@@ -74,12 +74,13 @@ function StockByProduct() {
   );
 }
 
-function StockRows({ row, expanded, onToggle }: { row: StockByProductRow; expanded: boolean; onToggle: () => void }) {
+function StockRows({ row, open, onToggle }: { row: StockByProductRow; open: ReadonlySet<string>; onToggle: (id: string) => void }) {
+  const expanded = open.has(row.productId);
   return (
     <>
       <tr>
         <td>
-          <button className="secondary" onClick={onToggle} aria-expanded={expanded} disabled={row.locations.length === 0}>
+          <button className="secondary" onClick={() => onToggle(row.productId)} aria-expanded={expanded} disabled={row.locations.length === 0}>
             {expanded ? "▾" : "▸"}
           </button>{" "}
           {row.productName}
@@ -139,7 +140,7 @@ function StockByWarehouse() {
   );
 }
 
-const INDENT = 20;
+const indent = (depth: number) => ({ paddingLeft: depth * 20 + 8 });
 
 /**
  * A node row carries the totals of its whole subtree. Expanding it lists the products it holds itself,
@@ -152,7 +153,7 @@ function WarehouseRows({ node, depth, open, onToggle }: { node: StockByWarehouse
   return (
     <>
       <tr>
-        <td style={{ paddingLeft: depth * INDENT + 8 }}>
+        <td style={indent(depth)}>
           <button className="secondary" onClick={() => onToggle(node.warehouseId)} aria-expanded={expanded} disabled={!expandable}>
             {expanded ? "▾" : "▸"}
           </button>{" "}
@@ -170,7 +171,7 @@ function WarehouseRows({ node, depth, open, onToggle }: { node: StockByWarehouse
           {node.children.length > 0 && node.rolledUp.length > 0 && (
             <>
               <tr className="sub-row">
-                <td colSpan={4} className="muted" style={{ paddingLeft: (depth + 1) * INDENT + 8 }}>
+                <td colSpan={4} className="muted" style={indent(depth + 1)}>
                   Ichki omborlar bilan jami:
                 </td>
               </tr>
@@ -191,7 +192,7 @@ function WarehouseRows({ node, depth, open, onToggle }: { node: StockByWarehouse
 function ProductLineRow({ line, depth }: { line: StockProductLine; depth: number }) {
   return (
     <tr className="sub-row">
-      <td style={{ paddingLeft: depth * INDENT + 8 }}>{line.productName}</td>
+      <td style={indent(depth)}>{line.productName}</td>
       <td className="num">{som.format(line.pieces)}</td>
       <td className="num">{formatBlocks(line)}</td>
       <td className="num">{som.format(line.value)}</td>

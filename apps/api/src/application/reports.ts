@@ -10,6 +10,19 @@ const quantity = (pieces: number, piecesPerBlock: number): StockQuantity => {
   return { pieces, blocks: split.blocks, remainderPieces: split.pieces };
 };
 
+/** One product's figures for a given number of pieces, valued at its average cost. */
+const productLine = (p: { id: string; name: string; piecesPerBlock: number; averageCost: number }, pieces: number): StockProductLine => ({
+  productId: p.id,
+  productName: p.name,
+  piecesPerBlock: p.piecesPerBlock,
+  ...quantity(pieces, p.piecesPerBlock),
+  averageCost: p.averageCost,
+  value: pieces * p.averageCost,
+});
+
+/** Pieces per product, per warehouse node. */
+type Totals = Map<string, Map<string, number>>;
+
 export function makeReportUseCases(deps: { products: ProductRepository; warehouses: WarehouseRepository; stock: StockRepository }) {
   return {
     /** Every active product, plus archived ones that still hold stock, with where the stock sits. */
@@ -24,12 +37,7 @@ export function makeReportUseCases(deps: { products: ProductRepository; warehous
       return products
         .filter((p) => !p.archived || p.onHandQuantity !== 0)
         .map((p) => ({
-          productId: p.id,
-          productName: p.name,
-          piecesPerBlock: p.piecesPerBlock,
-          ...quantity(p.onHandQuantity, p.piecesPerBlock),
-          averageCost: p.averageCost,
-          value: p.onHandQuantity * p.averageCost,
+          ...productLine(p, p.onHandQuantity),
           locations: balances
             .filter((b) => b.productId === p.id)
             .map((b) => ({
@@ -54,9 +62,9 @@ export function makeReportUseCases(deps: { products: ProductRepository; warehous
       const productById = new Map(products.map((p) => [p.id, p]));
       const ancestorsOf = new Map(warehouses.map((w) => [w.id, w.ancestors]));
 
-      const own = new Map<string, Map<string, number>>();
-      const rolledUp = new Map<string, Map<string, number>>();
-      const add = (totals: Map<string, Map<string, number>>, warehouseId: string, productId: string, pieces: number) => {
+      const own: Totals = new Map();
+      const rolledUp: Totals = new Map();
+      const add = (totals: Totals, warehouseId: string, productId: string, pieces: number) => {
         const perProduct = totals.get(warehouseId) ?? new Map<string, number>();
         perProduct.set(productId, (perProduct.get(productId) ?? 0) + pieces);
         totals.set(warehouseId, perProduct);
@@ -68,17 +76,7 @@ export function makeReportUseCases(deps: { products: ProductRepository; warehous
 
       const lines = (perProduct: Map<string, number> | undefined): StockProductLine[] =>
         [...(perProduct ?? [])]
-          .map(([productId, pieces]) => {
-            const p = productById.get(productId)!;
-            return {
-              productId,
-              productName: p.name,
-              piecesPerBlock: p.piecesPerBlock,
-              averageCost: p.averageCost,
-              value: pieces * p.averageCost,
-              ...quantity(pieces, p.piecesPerBlock),
-            };
-          })
+          .map(([productId, pieces]) => productLine(productById.get(productId)!, pieces))
           .sort((a, b) => a.productName.localeCompare(b.productName));
 
       const children = new Map<string | null, Warehouse[]>();
