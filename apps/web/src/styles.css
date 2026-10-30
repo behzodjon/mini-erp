@@ -109,7 +109,7 @@ label.check input { display: inline; width: auto; min-height: 0; margin: 0; acce
 .product-form label { margin: 0; }
 .product-form .actions { display: flex; gap: 0.5rem; }
 .product-form .full { grid-column: 1 / -1; }
-.purchase-total { grid-column: 1 / -1; text-align: right; font-size: 1.1rem; font-weight: 700; }
+.purchase-total { grid-column: 1 / -1; margin: 0; text-align: right; font-size: 1.1rem; font-weight: 700; }
 
 /* Tables */
 table.data { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
@@ -130,8 +130,14 @@ tr.total td { background: var(--accent-soft); font-size: 1.05rem; }
 
 .lines { grid-column: 1 / -1; }
 .lines table.data { box-shadow: none; }
-.lines table.data td { padding: 0.4rem 0.5rem; }
+.lines table.data td { padding: 0.5rem; vertical-align: top; }
+.lines table.data td.num { padding-top: 0.95rem; white-space: nowrap; }
+.lines table.data td.num-input { width: 10rem; }
+.lines table.data td:first-child, .lines table.data th:first-child { padding-left: 0.75rem; }
 .lines input, .lines select { margin: 0; }
+.lines td > span { display: block; margin-top: 0.25rem; font-size: 0.8rem; }
+.lines td.num-input input::-webkit-inner-spin-button { display: none; }
+.lines > button { margin-top: 0.75rem; }
 
 /* Status pills on document lists */
 .status-draft, .status-executed { white-space: nowrap; font-weight: 600; font-size: 0.85rem; }
