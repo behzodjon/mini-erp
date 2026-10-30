@@ -34,3 +34,5 @@ The brief requires every prompt given to the AI to be documented. This file reco
     → The agent read ticket 01, the spec and the handoff document, then built the walking skeleton test-first.
 12. `/mattpocock-skills:implement ticket 02`
     → The agent did the code side of "Deploy the walking skeleton": static serving, SPA fallback, production build and start, and a Render blueprint. Creating Atlas and Render and setting their env vars is left to the human.
+13. Deploy walkthrough (several short messages, screenshots of the Atlas and Render dashboards): the GitHub repo URL `https://github.com/behzodjon/mini-erp`; "what should i do" and "i can't find passowrd" while creating the Atlas cluster and database user; the finished Atlas connection string `[redacted]`; the Render Blueprint form.
+    → The agent guided the human steps (new Atlas project and M0 cluster in Paris, `0.0.0.0/0` access, database user, Render Blueprint with four secrets) and then checked the live service: health reports the database as ok.

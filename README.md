@@ -41,4 +41,4 @@ pnpm start   # production: serves API + web app from Fastify (set NODE_ENV=produ
 2. In Render: New → Blueprint → pick this repo. Set the secret env vars it asks for: `MONGODB_URI` (the Atlas `mongodb+srv://` string), `OWNER_USERNAME`, `OWNER_PASSWORD_HASH` (from `pnpm hash-password <password>`) and `SESSION_SECRET` (32+ random chars).
 3. Open the URL: the login page shows, and `/api/health` reports `{"api":"ok","database":"ok"}`.
 
-Live URL: _(add after the first deploy)_
+Live URL: https://beverage-shop-erp.onrender.com (free instance: the first request after idle takes ~50 s)
