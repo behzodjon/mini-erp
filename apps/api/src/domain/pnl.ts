@@ -1,5 +1,5 @@
-import { expenseCategories, type CashCategory, type DebtBalance, type PnlReport, type SalesFigures } from "@erp/shared";
-import { pnlEffectOf } from "./cash-category.js";
+import type { CashCategory, DebtBalance, PnlReport, SalesFigures } from "@erp/shared";
+import { debtEffectOf, expenseCategories } from "./cash-category.js";
 import type { CashRecord } from "./cash.js";
 
 export type CategoryTotal = { category: CashCategory; total: number };
@@ -11,14 +11,16 @@ export type CategoryTotal = { category: CashCategory; total: number };
  */
 export function composePnl(input: { sales: SalesFigures; cashTotals: CategoryTotal[]; stockCountResult: number }): PnlReport {
   const totalOf = (category: CashCategory) =>
-    input.cashTotals.filter((t) => t.category === category && pnlEffectOf(t.category) !== "none").reduce((sum, t) => sum + t.total, 0);
+    input.cashTotals.filter((t) => t.category === category).reduce((sum, t) => sum + t.total, 0);
 
   const expenses = expenseCategories.map((category) => ({ category, amount: totalOf(category) }));
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const otherIncome = totalOf("other_income");
 
   return {
-    ...input.sales,
+    revenue: input.sales.revenue,
+    costOfGoodsSold: input.sales.costOfGoodsSold,
+    grossProfit: input.sales.grossProfit,
     expenses,
     totalExpenses,
     stockCountResult: input.stockCountResult,
@@ -32,16 +34,13 @@ export function debtBalances(
   records: Pick<CashRecord, "category" | "counterpartyId" | "amount">[],
   counterpartyNames: ReadonlyMap<string, string>,
 ): { owedToMe: DebtBalance[]; iOwe: DebtBalance[] } {
-  const owed = new Map<string, number>();
-  const owing = new Map<string, number>();
-  const add = (balances: Map<string, number>, id: string, amount: number) => balances.set(id, (balances.get(id) ?? 0) + amount);
+  const sides = { owedToMe: new Map<string, number>(), iOwe: new Map<string, number>() };
 
   for (const { category, counterpartyId, amount } of records) {
-    if (!counterpartyId) continue;
-    if (category === "loan_given") add(owed, counterpartyId, amount);
-    else if (category === "loan_repayment_received") add(owed, counterpartyId, -amount);
-    else if (category === "loan_received") add(owing, counterpartyId, amount);
-    else if (category === "loan_repayment_paid") add(owing, counterpartyId, -amount);
+    const effect = debtEffectOf(category);
+    if (!counterpartyId || !effect) continue;
+    const balances = sides[effect.side];
+    balances.set(counterpartyId, (balances.get(counterpartyId) ?? 0) + effect.sign * amount);
   }
 
   const rows = (balances: Map<string, number>): DebtBalance[] =>
@@ -49,5 +48,5 @@ export function debtBalances(
       .filter(([, amount]) => amount !== 0)
       .map(([counterpartyId, amount]) => ({ counterpartyId, counterpartyName: counterpartyNames.get(counterpartyId) ?? "?", amount }))
       .sort((a, b) => a.counterpartyName.localeCompare(b.counterpartyName));
-  return { owedToMe: rows(owed), iOwe: rows(owing) };
+  return { owedToMe: rows(sides.owedToMe), iOwe: rows(sides.iOwe) };
 }

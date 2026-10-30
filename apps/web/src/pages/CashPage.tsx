@@ -8,11 +8,10 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { api } from "../api";
-import { CATEGORY_LABEL } from "../lib";
+import { CATEGORY_LABEL, som } from "../lib";
 
 const CASH_KEY = ["cash-entries"] as const;
 const COUNTERPARTIES_KEY = ["counterparties"] as const;
-const som = new Intl.NumberFormat("uz-UZ");
 
 const LOAN_CATEGORIES: readonly CashCategory[] = ["loan_received", "loan_repayment_received", "loan_given", "loan_repayment_paid"];
 const CATEGORIES_FOR: Record<CashDirection, readonly ManualCashCategory[]> = {

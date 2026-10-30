@@ -12,7 +12,7 @@ import type {
   StockProductLine,
   StockQuantity,
 } from "@erp/shared";
-import { signedAmount } from "../domain/cash.js";
+import { cashBalance } from "../domain/cash.js";
 import { composePnl, debtBalances } from "../domain/pnl.js";
 import { splitIntoBlocks } from "../domain/quantity.js";
 import { asExecuted, type ExecutedSale } from "../domain/sale.js";
@@ -104,10 +104,9 @@ export function makeReportUseCases(deps: {
   warehouses: WarehouseRepository;
   stock: StockRepository;
 }) {
-  const salesIn = async ({ from, to }: DateRangeQuery): Promise<SalesReport> => {
-    const { start, end } = shopDaysRange(from, to);
+  const salesBetween = async (range: { start: Date; end: Date }): Promise<SalesReport> => {
     const [sales, products] = await Promise.all([
-      deps.sales.listExecuted({ from: start, until: end }),
+      deps.sales.listExecuted({ from: range.start, until: range.end }),
       deps.products.list({ includeArchived: true }),
     ]);
     return salesReport(sales.map(asExecuted), products);
@@ -190,28 +189,27 @@ export function makeReportUseCases(deps: {
      * Executed sales whose execution falls on a shop day in the range, both ends included.
      * Cost of goods sold is the average cost each line stored when it was executed.
      */
-    sales: salesIn,
+    sales: ({ from, to }: DateRangeQuery) => salesBetween(shopDaysRange(from, to)),
 
     /**
      * Net profit over the range. Sales and stock counts count on the shop day they were executed;
      * expenses and other income on the date of their cash entry.
      */
     async pnl(range: DateRangeQuery): Promise<PnlReport> {
-      const { start, end } = shopDaysRange(range.from, range.to);
+      const days = shopDaysRange(range.from, range.to);
       const [{ summary }, cashTotals, stockCountResult] = await Promise.all([
-        salesIn(range),
+        salesBetween(days),
         deps.cash.totalsByCategory(range),
-        deps.stockCounts.executedValue({ from: start, until: end }),
+        deps.stockCounts.executedValue({ from: days.start, until: days.end }),
       ]);
-      const { revenue, costOfGoodsSold, grossProfit } = summary;
-      return composePnl({ sales: { revenue, costOfGoodsSold, grossProfit }, cashTotals, stockCountResult });
+      return composePnl({ sales: summary, cashTotals, stockCountResult });
     },
 
     /** The cash balance as of every entry so far, and who owes what: the money that is not profit but still matters. */
     async cashAndDebts(): Promise<CashAndDebts> {
       const [records, counterparties] = await Promise.all([deps.cash.list(), deps.counterparties.list()]);
       return {
-        cashBalance: records.reduce((sum, r) => sum + signedAmount(r), 0),
+        cashBalance: cashBalance(records),
         ...debtBalances(records, new Map(counterparties.map((c) => [c.id, c.name]))),
       };
     },

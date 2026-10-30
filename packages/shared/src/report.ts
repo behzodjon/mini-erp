@@ -76,9 +76,8 @@ export type SalesReport = {
   sales: SalesReportEntry[];
 };
 
-/** Operating expense categories, in the order the P&L lists them. */
-export const expenseCategories = ["travel_cost", "rent", "salary", "other_expense"] as const;
-export type ExpenseCategory = (typeof expenseCategories)[number];
+/** Operating expense categories; the API derives the list from its category rules. */
+export type ExpenseCategory = "travel_cost" | "rent" | "salary" | "other_expense";
 
 export type PnlReport = SalesFigures & {
   /** Always every expense category, zero or not. */
