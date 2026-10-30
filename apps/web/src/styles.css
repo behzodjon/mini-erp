@@ -1,0 +1,21 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #1f2937; background: #f3f4f6; }
+button { cursor: pointer; padding: 0.5rem 1rem; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font: inherit; }
+button:disabled { opacity: 0.6; cursor: default; }
+input { display: block; width: 100%; margin-top: 0.25rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; }
+label { display: block; margin-bottom: 1rem; font-size: 0.9rem; }
+.center-note { text-align: center; margin-top: 4rem; }
+.login { display: grid; place-items: center; min-height: 100vh; }
+.card { width: 20rem; padding: 2rem; background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgb(0 0 0 / 0.12); }
+.card h1 { margin-top: 0; font-size: 1.3rem; }
+.card button { width: 100%; }
+.error { color: #b91c1c; font-size: 0.9rem; }
+.muted { color: #6b7280; }
+.shell { display: grid; grid-template-columns: 14rem 1fr; min-height: 100vh; }
+.shell aside { display: flex; flex-direction: column; padding: 1rem; background: #111827; color: #fff; }
+.shell aside h1 { font-size: 1.1rem; margin: 0 0 1.5rem; }
+.shell nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.shell nav a { padding: 0.5rem 0.75rem; border-radius: 6px; color: #d1d5db; text-decoration: none; }
+.shell nav a.active { background: #374151; color: #fff; }
+.shell .user { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.9rem; }
+.shell main { padding: 2rem; }
